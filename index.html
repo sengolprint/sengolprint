@@ -105,6 +105,7 @@
       <div class="row"><div><label for="edgeBottom">Bottom</label><input id="edgeBottom" type="number" min="-30" max="30" step="0.5" value="0" /></div><div><label for="edgeLeft">Left</label><input id="edgeLeft" type="number" min="-30" max="30" step="0.5" value="0" /></div></div>
       <div class="actions" style="margin-top:10px"><button id="fitBackground" class="secondary">Fit white margin</button><button id="resetBackground" class="secondary">Reset image</button></div>
       <button id="moveBackground" class="secondary" style="width:100%;margin-top:8px">Move image on page</button>
+      <button id="toggleBackground" class="secondary" style="width:100%;margin-top:8px">Hide background</button>
       <div class="actions" style="margin-top:8px"><button id="zoomOut" class="secondary">− Zoom</button><button id="zoomIn" class="secondary">+ Zoom</button></div>
       <p class="hint">Move mode on karke preview image ko mouse/finger se drag karein. Zoom buttons ya mouse wheel use karein.</p>
     </div>
@@ -180,6 +181,8 @@
   ['edgeTop','edgeRight','edgeBottom','edgeLeft'].forEach(id=>$(id).addEventListener('input',updateBackgroundTransform));
   $('fitBackground').addEventListener('click',()=>{$('bgScale').value=104;$('bgX').value=-4;$('bgY').value=-4;updateBackgroundTransform();announce('White margin crop applied')});
   $('resetBackground').addEventListener('click',()=>{$('bgScale').value=100;$('bgX').value=0;$('bgY').value=0;['edgeTop','edgeRight','edgeBottom','edgeLeft'].forEach(id=>$(id).value=0);updateBackgroundTransform();announce('Background reset')});
+  let bgVisible=true;
+  $('toggleBackground').addEventListener('click',()=>{bgVisible=!bgVisible;bg.style.visibility=bgVisible?'visible':'hidden';$('toggleBackground').textContent=bgVisible?'Hide background':'Show background';announce(bgVisible?'Background shown':'Background hidden')});
   let bgMoveMode=false,bgDrag=null;
   $('moveBackground').addEventListener('click',()=>{bgMoveMode=!bgMoveMode;sheet.classList.toggle('adjust-bg',bgMoveMode);$('moveBackground').classList.toggle('move-active',bgMoveMode);$('moveBackground').textContent=bgMoveMode?'Finish moving image':'Move image on page';announce(bgMoveMode?'Drag image to position it':'Image position locked')});
   $('zoomIn').addEventListener('click',()=>{$('bgScale').value=Math.min(130,(+$('bgScale').value||100)+1);updateBackgroundTransform()});
