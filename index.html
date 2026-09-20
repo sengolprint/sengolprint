@@ -97,6 +97,10 @@
       <input id="bgFile" type="file" accept="image/*" />
       <label for="bgOpacity">Preview opacity</label>
       <input id="bgOpacity" type="range" min="20" max="100" value="70" style="width:100%" />
+      <div class="row"><div><label for="bgScale">Scale (%)</label><input id="bgScale" type="number" min="80" max="130" step="0.5" value="100" /></div><div><label for="bgY">Top offset (mm)</label><input id="bgY" type="number" min="-30" max="30" step="0.5" value="0" /></div></div>
+      <label for="bgX">Left offset (mm)</label><input id="bgX" type="number" min="-30" max="30" step="0.5" value="0" />
+      <div class="actions" style="margin-top:10px"><button id="fitBackground" class="secondary">Fit white margin</button><button id="resetBackground" class="secondary">Reset image</button></div>
+      <p class="hint">White border ho to Fit white margin use karein, phir offsets se fine adjustment karein.</p>
     </div>
 
     <div class="section">
@@ -165,6 +169,10 @@
   $('generateMarksheet').addEventListener('click',generateMarksheet);
   $('bgFile').addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{bg.src=r.result;bg.style.display='block';$('empty').style.display='none'};r.readAsDataURL(file)});
   $('bgOpacity').addEventListener('input',e=>bg.style.opacity=e.target.value/100);
+  function updateBackgroundTransform(){const scale=(+$('bgScale').value||100)/100,x=+$('bgX').value||0,y=+$('bgY').value||0;bg.style.transformOrigin='top left';bg.style.transform=`translate(${x}mm,${y}mm) scale(${scale})`}
+  ['bgScale','bgX','bgY'].forEach(id=>$(id).addEventListener('input',updateBackgroundTransform));
+  $('fitBackground').addEventListener('click',()=>{$('bgScale').value=104;$('bgX').value=-4;$('bgY').value=-4;updateBackgroundTransform();announce('White margin crop applied')});
+  $('resetBackground').addEventListener('click',()=>{$('bgScale').value=100;$('bgX').value=0;$('bgY').value=0;updateBackgroundTransform();announce('Background reset')});
   ['fieldText','fontSize','fontWeight','xPos','yPos'].forEach(id=>$(id).addEventListener('input',updateSelected));
   $('addField').addEventListener('click',()=>makeField({text:$('fieldText').value||'New field',x:20,y:20,size:+$('fontSize').value||12,weight:$('fontWeight').value}));
   $('deleteField').addEventListener('click',()=>{if(!selected)return;selected.el.remove();fields=fields.filter(f=>f!==selected);selected=null;updateCount()});
