@@ -7,9 +7,8 @@
   <style>
     :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#172033;background:#eef2f7}
     *{box-sizing:border-box} body{margin:0}.app{min-height:100vh;display:grid;grid-template-columns:340px 1fr}
-    .dashboard{min-height:100vh;background:linear-gradient(135deg,#eef6ff 0%,#f8fafc 50%,#e7fff7 100%);padding:32px}
-    .dash-shell{max-width:1080px;margin:auto}.dash-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:48px}.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.1rem}.brand-mark{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#111827;color:#fff}.dash-badge{font-size:.78rem;background:#fff;border:1px solid #dbe3ed;padding:7px 11px;border-radius:999px;color:#526174}
-    .dash-hero{display:grid;grid-template-columns:1.35fr .65fr;gap:22px;align-items:stretch}.hero-card,.summary-card,.feature-card{background:rgba(255,255,255,.9);border:1px solid rgba(203,213,225,.8);box-shadow:0 18px 50px rgba(30,55,90,.08);border-radius:22px}.hero-card{padding:42px}.eyebrow{color:#087443;font-weight:800;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase}.hero-card h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;letter-spacing:-.045em;margin:14px 0}.hero-card p{color:#5d6b7e;max-width:620px;line-height:1.65;margin:0 0 26px}.start-btn{background:#111827;color:#fff;padding:13px 18px;border-radius:11px}.summary-card{padding:26px;display:flex;flex-direction:column;justify-content:space-between}.summary-card h2{font-size:1rem;margin:0;color:#536176}.big-number{font-size:3.2rem;font-weight:850;letter-spacing:-.05em}.saved-state{padding:12px 14px;border-radius:12px;background:#ecfdf3;color:#087443;font-size:.86rem;font-weight:700}.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}.feature-card{padding:22px}.feature-icon{font-size:1.4rem}.feature-card h3{margin:12px 0 6px;font-size:1rem}.feature-card p{margin:0;color:#69778a;font-size:.88rem;line-height:1.5}.back-btn{background:#eef2f7;color:#172033;padding:8px 11px;margin-bottom:16px}
+    .dashboard{min-height:100vh;background:#f3f6fb;display:grid;grid-template-columns:260px 1fr}.dash-sidebar{background:#101827;color:#d6deea;padding:26px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.05rem;color:#fff;padding:0 8px 26px}.brand-mark{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;color:#101827}.side-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:#728097;padding:10px 12px}.side-nav{display:grid;gap:5px}.side-link{display:flex;align-items:center;gap:12px;width:100%;background:transparent;color:#b9c5d6;text-align:left;padding:11px 12px;border-radius:10px;font-weight:650}.side-link:hover,.side-link.active{background:#202b3c;color:#fff}.side-icon{width:26px;text-align:center;font-size:1.05rem}.side-footer{margin-top:auto;border-top:1px solid #293448;padding:18px 10px 0;font-size:.78rem;color:#7f8ca1;line-height:1.5}
+    .dash-content{padding:34px;min-width:0}.dash-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}.dash-top h1{margin:0;font-size:1.65rem}.dash-top p{margin:5px 0 0;color:#69778a}.dash-badge{font-size:.78rem;background:#fff;border:1px solid #dbe3ed;padding:8px 12px;border-radius:999px;color:#526174}.overview{display:grid;grid-template-columns:1.5fr .5fr;gap:18px}.welcome-card,.stat-card,.doc-card{background:#fff;border:1px solid #e0e6ef;box-shadow:0 12px 35px rgba(30,55,90,.055);border-radius:18px}.welcome-card{padding:28px;background:linear-gradient(125deg,#172033,#293a55);color:#fff}.welcome-card h2{font-size:1.65rem;margin:8px 0}.welcome-card p{color:#c3cede;line-height:1.55;margin:0 0 20px}.eyebrow{color:#74e5b5;font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}.start-btn{background:#fff;color:#172033;padding:11px 15px;border-radius:9px}.stat-card{padding:24px;display:flex;flex-direction:column;justify-content:space-between}.stat-card h2{font-size:.85rem;color:#69778a;margin:0}.big-number{font-size:2.8rem;font-weight:850;letter-spacing:-.05em}.saved-state{font-size:.8rem;color:#087443;font-weight:700}.docs-head{display:flex;justify-content:space-between;align-items:end;margin:28px 0 13px}.docs-head h2{margin:0;font-size:1.1rem}.docs-head span{font-size:.78rem;color:#78869a}.document-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.doc-card{padding:19px;cursor:pointer;text-align:left;transition:.18s ease}.doc-card:hover{transform:translateY(-2px);border-color:#aab8ca;box-shadow:0 15px 35px rgba(30,55,90,.09)}.doc-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#eef4ff;color:#2456a6;font-weight:850}.doc-card h3{margin:15px 0 5px;font-size:1rem}.doc-card p{margin:0;color:#758297;font-size:.82rem;line-height:1.4}.doc-action{display:block;margin-top:16px;color:#2456a6;font-size:.8rem;font-weight:800}.back-btn{background:#eef2f7;color:#172033;padding:8px 11px;margin-bottom:16px}
     .hidden{display:none!important}
     aside{background:#fff;border-right:1px solid #dce3ec;padding:22px;position:sticky;top:0;height:100vh;overflow:auto}
     h1{font-size:1.35rem;margin:0 0 6px}.sub{color:#667085;font-size:.9rem;line-height:1.45;margin:0 0 20px}
@@ -26,38 +25,48 @@
     #background{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;opacity:.7;display:none}
     .field{position:absolute;left:20mm;top:20mm;min-width:15mm;min-height:6mm;color:#000;font-family:Arial,sans-serif;font-size:12pt;line-height:1.15;white-space:nowrap;cursor:move;user-select:none;padding:1mm 1.5mm;border:1px dashed transparent}
     .field.selected{border-color:#2563eb;background:rgba(37,99,235,.06)}.empty{position:absolute;inset:0;display:grid;place-items:center;color:#94a3b8;text-align:center;padding:40px;pointer-events:none}
-    @media(max-width:900px){.app{grid-template-columns:1fr}aside{position:relative;height:auto}.sheet-wrap{transform-origin:top left}main{padding:16px}.dashboard{padding:22px}.dash-hero{grid-template-columns:1fr}.feature-grid{grid-template-columns:1fr}.hero-card{padding:28px}.dash-nav{margin-bottom:28px}}
+    @media(max-width:900px){.app{grid-template-columns:1fr}aside{position:relative;height:auto}.sheet-wrap{transform-origin:top left}main{padding:16px}.dashboard{grid-template-columns:1fr}.dash-sidebar{position:relative;height:auto;padding:15px}.side-nav{grid-template-columns:repeat(3,1fr)}.side-link{justify-content:center}.side-link span:last-child,.side-label,.side-footer{display:none}.brand{padding-bottom:14px}.dash-content{padding:20px}.overview{grid-template-columns:1fr}.document-grid{grid-template-columns:1fr 1fr}.dash-badge{display:none}}
+    @media(max-width:560px){.document-grid{grid-template-columns:1fr}.side-nav{grid-template-columns:repeat(2,1fr)}}
     @media print{@page{size:A4 portrait;margin:0}html,body{width:210mm;height:297mm;background:#fff}.app{display:block}.no-print,aside{display:none!important}main{padding:0}.sheet-wrap{box-shadow:none;margin:0}#sheet{width:210mm;height:297mm}.field{border:0!important;background:transparent!important}.hide-bg-print #background{display:none!important}.empty{display:none!important}}
   </style>
 </head>
 <body>
 <section id="dashboard" class="dashboard">
-  <div class="dash-shell">
-    <nav class="dash-nav"><div class="brand"><span class="brand-mark">M</span> Marksheet Print</div><span class="dash-badge">A4 Print Studio</span></nav>
-    <div class="dash-hero">
-      <div class="hero-card">
-        <div class="eyebrow">Print alignment workspace</div>
-        <h1>Marksheet details,<br>bilkul sahi jagah.</h1>
-        <p>Pre-printed marksheet ki scan upload karke black text fields align karein. Layout save karein aur Actual Size par seedha print karein.</p>
-        <button id="openEditor" class="start-btn">New Marksheet Setup →</button>
-      </div>
-      <div class="summary-card">
-        <div><h2>Saved layout</h2><div id="savedCount" class="big-number">0</div><div style="color:#69778a;font-size:.88rem">text fields ready</div></div>
-        <div id="savedState" class="saved-state">Naya setup shuru karein</div>
-      </div>
-    </div>
-    <div class="feature-grid">
-      <article class="feature-card"><div class="feature-icon">⌖</div><h3>Exact alignment</h3><p>Drag, arrow keys aur millimetre positions se fields set karein.</p></article>
-      <article class="feature-card"><div class="feature-icon">A</div><h3>Black text only</h3><p>Pre-printed hardcopy par background ke bina sirf details print karein.</p></article>
-      <article class="feature-card"><div class="feature-icon">▣</div><h3>Local save</h3><p>Aapka layout isi device ke browser mein safely save rehta hai.</p></article>
-    </div>
+  <aside class="dash-sidebar">
+    <div class="brand"><span class="brand-mark">S</span><span>Sengol Print</span></div>
+    <div class="side-label">Workspace</div>
+    <nav class="side-nav">
+      <button class="side-link active" data-doc="Dashboard"><span class="side-icon">⌂</span><span>Dashboard</span></button>
+      <button class="side-link" data-doc="Marksheet"><span class="side-icon">▦</span><span>Marksheet</span></button>
+      <button class="side-link" data-doc="Provisional"><span class="side-icon">P</span><span>Provisional</span></button>
+      <button class="side-link" data-doc="Migration"><span class="side-icon">M</span><span>Migration</span></button>
+      <button class="side-link" data-doc="Degree"><span class="side-icon">D</span><span>Degree</span></button>
+      <button class="side-link" data-doc="Consolidated"><span class="side-icon">C</span><span>Consolidated</span></button>
+    </nav>
+    <div class="side-footer">A4 Print Studio<br>Black text alignment tool</div>
+  </aside>
+  <div class="dash-content">
+    <header class="dash-top"><div><h1>Document Dashboard</h1><p>Print template choose karke setup shuru karein.</p></div><span class="dash-badge">A4 Print Studio</span></header>
+    <section class="overview">
+      <div class="welcome-card"><div class="eyebrow">Print alignment workspace</div><h2>Documents ko exact position par print karein.</h2><p>Background scan upload karein, black text fields align karein aur pre-printed hardcopy par print karein.</p><button class="start-btn open-doc" data-doc="Marksheet">New Marksheet Setup →</button></div>
+      <div class="stat-card"><h2>SAVED LAYOUT</h2><div><div id="savedCount" class="big-number">0</div><div style="color:#69778a;font-size:.82rem">text fields ready</div></div><div id="savedState" class="saved-state">Naya setup shuru karein</div></div>
+    </section>
+    <div class="docs-head"><h2>Print Documents</h2><span>6 document types</span></div>
+    <section class="document-grid">
+      <button class="doc-card open-doc" data-doc="Marksheet"><span class="doc-icon">▦</span><h3>Marksheet</h3><p>Student subject marks aur result details.</p><span class="doc-action">Open setup →</span></button>
+      <button class="doc-card open-doc" data-doc="Provisional"><span class="doc-icon">P</span><h3>Provisional</h3><p>Temporary qualification certificate details.</p><span class="doc-action">Open setup →</span></button>
+      <button class="doc-card open-doc" data-doc="Migration"><span class="doc-icon">M</span><h3>Migration</h3><p>University migration certificate information.</p><span class="doc-action">Open setup →</span></button>
+      <button class="doc-card open-doc" data-doc="Degree"><span class="doc-icon">D</span><h3>Degree</h3><p>Degree certificate name and award details.</p><span class="doc-action">Open setup →</span></button>
+      <button class="doc-card open-doc" data-doc="Consolidated"><span class="doc-icon">C</span><h3>Consolidated</h3><p>All semesters ka combined marks statement.</p><span class="doc-action">Open setup →</span></button>
+      <button class="doc-card open-doc" data-doc="Custom Document"><span class="doc-icon">+</span><h3>Custom Document</h3><p>Kisi bhi A4 pre-printed document ka setup.</p><span class="doc-action">Open setup →</span></button>
+    </section>
   </div>
 </section>
 
 <div id="editor" class="app hidden">
   <aside class="no-print">
     <button id="backDashboard" class="back-btn">← Dashboard</button>
-    <h1>Marksheet Print Setup</h1>
+    <h1 id="editorTitle">Marksheet Print Setup</h1>
     <p class="sub">Printed marksheet ki scan lagaiye, text fields ko sahi jagah drag kijiye, phir sirf black text print kijiye.</p>
 
     <div class="section">
@@ -127,9 +136,11 @@
   $('printBtn').addEventListener('click',()=>{document.body.classList.toggle('hide-bg-print',!$('printBackground').checked);fields.forEach(f=>f.el.classList.remove('selected'));window.print();if(selected)selected.el.classList.add('selected')});
   document.addEventListener('keydown',e=>{if(!selected||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;const d=e.shiftKey?1:.2;if(e.key==='ArrowUp')selected.y-=d;if(e.key==='ArrowDown')selected.y+=d;if(e.key==='ArrowLeft')selected.x-=d;if(e.key==='ArrowRight')selected.x+=d;selected.x=Math.max(0,selected.x);selected.y=Math.max(0,selected.y);renderField(selected);syncControls();e.preventDefault()});
   function refreshDashboard(){let saved=[];try{saved=JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]')}catch{}$('savedCount').textContent=saved.length;$('savedState').textContent=saved.length?'Saved layout available':'Naya setup shuru karein'}
-  function showEditor(){ $('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');window.scrollTo(0,0) }
+  function showEditor(doc='Marksheet'){ $('editorTitle').textContent=doc+' Print Setup';$('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');window.scrollTo(0,0) }
   function showDashboard(){ $('editor').classList.add('hidden');$('dashboard').classList.remove('hidden');refreshDashboard();window.scrollTo(0,0) }
-  $('openEditor').addEventListener('click',showEditor);$('backDashboard').addEventListener('click',showDashboard);
+  document.querySelectorAll('.open-doc').forEach(btn=>btn.addEventListener('click',()=>showEditor(btn.dataset.doc)));
+  document.querySelectorAll('.side-link').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.side-link').forEach(v=>v.classList.remove('active'));btn.classList.add('active');if(btn.dataset.doc!=='Dashboard')showEditor(btn.dataset.doc)}));
+  $('backDashboard').addEventListener('click',showDashboard);
   try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} updateCount();refreshDashboard();
 </script>
 </body>
