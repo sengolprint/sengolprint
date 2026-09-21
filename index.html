@@ -79,7 +79,7 @@
     <button id="hideControls" class="hide-controls">☰ Hide controls</button>
     <h1 id="editorTitle">Marksheet Print Setup</h1>
     <button id="prepareFormat" class="generate">Prepare Blank Marksheet Format</button>
-    <button id="openStudentData" class="open-student-data" type="button">Enter Complete Student Data</button>
+    <button id="openStudentData" class="open-student-data" type="button">1. Enter Complete Student Data</button>
     <dialog id="marksheetBulk" class="student-dialog">
       <div class="student-dialog-head"><h2>Marksheet Design Setup</h2><div class="student-dialog-actions"><button id="maximizeStudentData" class="student-dialog-maximize" type="button">⛶ Maximize</button><button id="closeStudentData" class="student-dialog-close" type="button">✕ Close</button></div></div>
       <div class="student-dialog-body">
@@ -121,7 +121,7 @@
     </dialog>
 
     <details class="section" open>
-      <summary>1. Background</summary>
+      <summary>2. Background</summary>
       <div class="section-body">
       <label for="bgFile">Marksheet scan/photo</label>
       <input id="bgFile" type="file" accept="image/*" />
@@ -142,7 +142,7 @@
     </details>
 
     <details class="section" open>
-      <summary>2. Marksheet position</summary>
+      <summary>3. Marksheet position</summary>
       <div class="section-body">
         <p class="hint">Popup mein taiyar poore marksheet setup ko background ke hisaab se left, right, up ya down shift karein.</p>
         <div class="row"><div><label for="markX">Left / Right (mm)</label><input id="markX" type="number" step="0.5" value="0" /></div><div><label for="markY">Up / Down (mm)</label><input id="markY" type="number" step="0.5" value="0" /></div></div>
@@ -151,7 +151,7 @@
     </details>
 
     <details class="section">
-      <summary>3. Text field</summary>
+      <summary>4. Text field</summary>
       <div class="section-body">
       <label for="fieldText">Print hone wala text</label>
       <input id="fieldText" type="text" placeholder="Jaise: RAHUL KUMAR" />
@@ -169,7 +169,7 @@
     </details>
 
     <details class="section">
-      <summary>4. Save & print</summary>
+      <summary>5. Save & print</summary>
       <div class="section-body">
       <div class="actions"><button id="saveLayout" class="secondary">Save layout</button><button id="clearLayout" class="secondary">Reset</button></div>
       <label class="check" style="margin-top:14px"><input id="printBackground" type="checkbox" /><span>Background bhi print karein <small>(pre-printed hardcopy ke liye unchecked rakhein)</small></span></label>
