@@ -126,11 +126,6 @@
         <input id="msCollege" type="hidden" />
         <div class="pdf-signatures"><div><input id="msCheckedBy" type="text" /><label>Checked By</label></div><div><input id="msPreparedBy" type="text" /><label>Prepared By</label></div><div><input id="msRegistrar" type="text" /><label>Registrar/Controller of Examination</label></div></div>
         <div class="actions" style="margin-top:12px"><button id="saveStudentData" class="secondary" type="button">Save Student Data</button><button id="clearStudentData" class="danger" type="button">Clear Data</button></div>
-        <div class="student-form-section">Cloud Save — Use On Any System</div>
-        <div class="row"><div><label>Cloud Record ID</label><input id="cloudRecordId" type="text" placeholder="Example: ANIKET-10001"></div><div><label>Secret PIN</label><input id="cloudRecordPin" type="password" placeholder="Minimum 6 characters"></div></div>
-        <div class="actions" style="margin-top:9px"><button id="saveCloudData" class="secondary" type="button">☁ Save to Cloud</button><button id="loadCloudData" class="secondary" type="button">↓ Load from Cloud</button></div>
-        <div id="cloudStatus" class="status" aria-live="polite"></div>
-        <p class="marks-help">Doosre system par same Record ID aur PIN use karein. PIN save nahi hota—use yaad rakhein.</p>
         <button id="generateMarksheet" class="generate">Generate Marksheet Layout</button>
         </div>
       </div>
@@ -185,6 +180,11 @@
       <summary>5. Save & print</summary>
       <div class="section-body">
       <div class="actions"><button id="saveLayout" class="secondary">Save layout</button><button id="clearLayout" class="secondary">Reset</button></div>
+      <label for="cloudRecordId">Cloud Record ID</label><input id="cloudRecordId" type="text" placeholder="Example: SIU-DESIGN-01" />
+      <label for="cloudRecordPin">Secret PIN</label><input id="cloudRecordPin" type="password" placeholder="Minimum 6 characters" />
+      <div class="actions" style="margin-top:8px"><button id="saveCloudData" class="secondary" type="button">☁ Save Cloud</button><button id="loadCloudData" class="secondary" type="button">↓ Load Cloud</button></div>
+      <div id="cloudStatus" class="status" aria-live="polite"></div>
+      <p class="hint">Doosre browser mein same Record ID aur PIN dalke Load Cloud dabayein.</p>
       <label for="designPresetName">Design name</label><input id="designPresetName" type="text" placeholder="Example: Design 1" />
       <div class="actions" style="margin-top:8px"><button id="saveDesignPreset" class="secondary" type="button">Save Design</button><button id="newDesignPreset" class="secondary" type="button">New Design</button></div>
       <label for="designPresetList">Saved designs</label><select id="designPresetList"><option value="">Select design</option></select>
