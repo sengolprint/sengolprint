@@ -137,14 +137,12 @@
       <button id="toggleBackground" class="secondary" style="width:100%;margin-top:8px">Hide background</button>
       <div class="actions" style="margin-top:8px"><button id="saveBackground" class="secondary">Save background</button><button id="clearBackground" class="danger">Clear saved</button></div>
       <div class="actions" style="margin-top:8px"><button id="zoomOut" class="secondary">− Zoom</button><button id="zoomIn" class="secondary">+ Zoom</button></div>
-      <p class="hint">Move mode on karke preview image ko mouse/finger se drag karein. Zoom buttons ya mouse wheel use karein.</p>
       </div>
     </details>
 
     <details class="section" open>
       <summary>3. Marksheet position</summary>
       <div class="section-body">
-        <p class="hint">Popup mein taiyar poore marksheet setup ko background ke hisaab se left, right, up ya down shift karein.</p>
         <div class="row"><div><label for="markX">Left / Right (mm)</label><input id="markX" type="number" step="0.5" value="0" /></div><div><label for="markY">Up / Down (mm)</label><input id="markY" type="number" step="0.5" value="0" /></div></div>
         <div class="position-pad"><button id="markUp" class="up" type="button">↑ Up</button><button id="markLeft" class="left" type="button">← Left</button><button id="markReset" class="reset" type="button">Reset</button><button id="markRight" class="right" type="button">Right →</button><button id="markDown" class="down" type="button">↓ Down</button></div>
       </div>
@@ -164,7 +162,6 @@
         <div><label for="yPos">Y (mm)</label><input id="yPos" type="number" step="0.1" /></div>
       </div>
       <div class="actions" style="margin-top:12px"><button id="addField" class="secondary">+ Add field</button><button id="deleteField" class="danger">Delete</button></div>
-      <p class="hint">Field select karke drag karein. Arrow keys se fine adjustment; Shift + Arrow se 1 mm move hoga.</p>
       </div>
     </details>
 
@@ -175,7 +172,6 @@
       <label class="check" style="margin-top:14px"><input id="printBackground" type="checkbox" /><span>Background bhi print karein <small>(pre-printed hardcopy ke liye unchecked rakhein)</small></span></label>
       <button id="printBtn" class="primary" style="margin-top:14px">Print A4</button>
       <div id="status" class="status" aria-live="polite"></div>
-      <p class="hint">Pehle plain paper par 100% / Actual Size par test print karein. Browser print dialog mein margins “None” rakhein.</p>
       </div>
     </details>
   </aside>
