@@ -231,8 +231,8 @@
   $('printBtn').addEventListener('click',()=>{document.body.classList.toggle('hide-bg-print',!$('printBackground').checked);fields.forEach(f=>f.el.classList.remove('selected'));window.print();if(selected)selected.el.classList.add('selected')});
   document.addEventListener('keydown',e=>{if(!selected||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;const d=e.shiftKey?1:.2;if(e.key==='ArrowUp')selected.y-=d;if(e.key==='ArrowDown')selected.y+=d;if(e.key==='ArrowLeft')selected.x-=d;if(e.key==='ArrowRight')selected.x+=d;selected.x=Math.max(0,selected.x);selected.y=Math.max(0,selected.y);renderField(selected);syncControls();e.preventDefault()});
   function refreshDashboard(){let saved=[];try{saved=JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]')}catch{}$('savedCount').textContent=saved.length;$('savedState').textContent=saved.length?'Saved layout available':'Naya setup shuru karein'}
-  function showEditor(doc='Marksheet'){ $('editorTitle').textContent=doc+' Print Setup';$('marksheetBulk').classList.toggle('hidden',doc!=='Marksheet');$('prepareFormat').classList.toggle('hidden',doc!=='Marksheet');$('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');if(doc==='Marksheet')generateMarksheet(true);window.scrollTo(0,0) }
-  function showDashboard(){ $('editor').classList.add('hidden');$('dashboard').classList.remove('hidden');refreshDashboard();window.scrollTo(0,0) }
+  function showEditor(doc='Marksheet'){ localStorage.setItem('active-document-v1',doc);$('editorTitle').textContent=doc+' Print Setup';$('marksheetBulk').classList.toggle('hidden',doc!=='Marksheet');$('prepareFormat').classList.toggle('hidden',doc!=='Marksheet');$('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');if(doc==='Marksheet')generateMarksheet(true);window.scrollTo(0,0) }
+  function showDashboard(){ localStorage.removeItem('active-document-v1');$('editor').classList.add('hidden');$('dashboard').classList.remove('hidden');refreshDashboard();window.scrollTo(0,0) }
   document.querySelectorAll('.open-doc').forEach(btn=>btn.addEventListener('click',()=>showEditor(btn.dataset.doc)));
   document.querySelectorAll('.side-link').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.side-link').forEach(v=>v.classList.remove('active'));btn.classList.add('active');if(btn.dataset.doc!=='Dashboard')showEditor(btn.dataset.doc)}));
   $('backDashboard').addEventListener('click',showDashboard);
@@ -240,7 +240,7 @@
   $('hideControls').addEventListener('click',()=>{$('editor').classList.add('controls-hidden');localStorage.setItem('editor-controls-hidden','1')});
   $('showControls').addEventListener('click',()=>{$('editor').classList.remove('controls-hidden');localStorage.setItem('editor-controls-hidden','0')});
   if(localStorage.getItem('sidebar-collapsed')==='1')$('dashboard').classList.add('sidebar-collapsed');if(localStorage.getItem('editor-controls-hidden')==='1')$('editor').classList.add('controls-hidden');
-  try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} restoreBackground();updateCount();refreshDashboard();
+  try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} restoreBackground();updateCount();refreshDashboard();const activeDocument=localStorage.getItem('active-document-v1');if(activeDocument)showEditor(activeDocument);
 </script>
 </body>
 </html>
