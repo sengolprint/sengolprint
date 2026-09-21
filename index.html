@@ -21,6 +21,7 @@
     .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;gap:9px;align-items:flex-start;font-size:.86rem;font-weight:500;line-height:1.35}.check input{margin-top:3px}
     .hint{font-size:.78rem;color:#667085;line-height:1.45}.status{font-size:.8rem;color:#087443;min-height:1.2em;margin-top:8px}
     details.bulk{border:1px solid #dce3ec;border-radius:12px;background:#f8fafc;margin:14px 0;padding:0 12px}details.bulk summary{cursor:pointer;font-weight:800;padding:12px 0}.bulk-body{padding:0 0 12px}.subject-editor{display:grid;gap:8px;margin-top:10px}.subject-row{border:1px solid #dce3ec;border-radius:9px;padding:9px;background:#fff}.subject-row .mini-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.subject-row input{padding:7px;font-size:.78rem}.subject-row .wide{grid-column:1/-1}.generate{background:#176b50;color:#fff;width:100%;margin-top:12px}
+    .student-dialog{width:min(920px,calc(100% - 24px));max-height:92vh;border:0;border-radius:18px;padding:0;box-shadow:0 25px 80px rgba(15,23,42,.3);color:#172033}.student-dialog::backdrop{background:rgba(15,23,42,.68)}.student-dialog-head{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:#172033;color:#fff}.student-dialog-head h2{margin:0;font-size:1.15rem}.student-dialog-close{background:#fff;color:#172033;padding:8px 12px}.student-dialog-body{padding:8px 22px 24px;max-height:calc(92vh - 64px);overflow:auto}.open-student-data{width:100%;background:#176b50;color:#fff;margin:0 0 14px;padding:13px}.student-form-section{margin:18px 0 8px;padding-bottom:7px;border-bottom:1px solid #dce3ec;font-size:.78rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:#526174}
     main{padding:28px;overflow:auto}.toolbar{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto 14px;color:#667085;font-size:.85rem}
     .sheet-wrap{width:max-content;margin:auto;box-shadow:0 18px 55px rgba(20,30,55,.18)}
     #sheet{position:relative;width:210mm;height:297mm;background:#fff;overflow:hidden;touch-action:none}
@@ -77,9 +78,11 @@
 
     <button id="prepareFormat" class="generate">Prepare Blank Marksheet Format</button>
     <p class="hint">Pehle format aur alignment final karein. Excel data import baad mein isi template ko fill karega.</p>
-    <details id="marksheetBulk" class="bulk" open>
-      <summary>Complete Student Data</summary>
-      <div class="bulk-body">
+    <button id="openStudentData" class="open-student-data" type="button">Enter Complete Student Data</button>
+    <dialog id="marksheetBulk" class="student-dialog">
+      <div class="student-dialog-head"><h2>Complete Student Data</h2><button id="closeStudentData" class="student-dialog-close" type="button">✕ Close</button></div>
+      <div class="student-dialog-body">
+        <div class="student-form-section">Student & Examination Details</div>
         <div class="row"><div><label>DMC No.</label><input id="msDmc" type="text" /></div><div><label>Semester</label><input id="msSemester" type="text" /></div></div>
         <label>Course / Programme</label><input id="msCourse" type="text" value="Bachelor of Library and Information Science (B.Lib.I.Sc.)" />
         <label>Examination</label><input id="msExam" type="text" value="I Semester Examination, January 2026" />
@@ -88,7 +91,9 @@
         <div class="row"><div><label>Roll No.</label><input id="msRoll" type="text" /></div><div><label>Enrollment No.</label><input id="msEnroll" type="text" /></div></div>
         <div class="row"><div><label>Registration No.</label><input id="msReg" type="text" /></div><div><label>Session</label><input id="msSession" type="text" value="July 2025" /></div></div>
         <label>Examination Held</label><input id="msHeld" type="text" value="January 2026" />
+        <div class="student-form-section">Subject & Marks Details</div>
         <label>Subjects (maximum 6)</label><div id="subjectEditor" class="subject-editor"></div>
+        <div class="student-form-section">Result Details</div>
         <div class="row"><div><label>S.G.P.A.</label><input id="msSgpa" type="text" /></div><div><label>C.G.P.A.</label><input id="msCgpa" type="text" /></div></div>
         <div class="row"><div><label>Total Marks Obtained</label><input id="msTotalMarks" type="text" /></div><div><label>Division</label><input id="msDivision" type="text" /></div></div>
         <label>Result</label><input id="msResult" type="text" value="PASS" />
@@ -99,7 +104,7 @@
         <div class="actions" style="margin-top:12px"><button id="saveStudentData" class="secondary" type="button">Save Student Data</button><button id="clearStudentData" class="danger" type="button">Clear Data</button></div>
         <button id="generateMarksheet" class="generate">Generate Marksheet Layout</button>
       </div>
-    </details>
+    </dialog>
 
     <details class="section" open>
       <summary>1. Background</summary>
@@ -195,6 +200,7 @@
   function saveStudentRecord(){const data=Object.fromEntries(studentFieldIds.map(id=>[id,$(id).value]));data.subjects=subjectData();localStorage.setItem('marksheet-student-data-v1',JSON.stringify(data));announce('Complete student data saved')}
   function restoreStudentRecord(){try{const data=JSON.parse(localStorage.getItem('marksheet-student-data-v1')||'null');if(!data)return;studentFieldIds.forEach(id=>{if(data[id]!==undefined)$(id).value=data[id]});if(Array.isArray(data.subjects))data.subjects.forEach((subject,i)=>{const row=subjectEditor.querySelectorAll('.subject-row')[i];if(!row)return;row.querySelectorAll('input').forEach(input=>{if(subject[input.dataset.k]!==undefined)input.value=subject[input.dataset.k]})})}catch{}}
   $('saveStudentData').addEventListener('click',saveStudentRecord);$('clearStudentData').addEventListener('click',()=>{if(!confirm('Saved student data clear karein?'))return;localStorage.removeItem('marksheet-student-data-v1');studentFieldIds.forEach(id=>$(id).value='');subjectEditor.querySelectorAll('input').forEach(input=>input.value='');announce('Student data cleared')});restoreStudentRecord();
+  $('openStudentData').addEventListener('click',()=>{$('marksheetBulk').showModal()});$('closeStudentData').addEventListener('click',()=>{$('marksheetBulk').close()});
   function infoRow(label,value){return `<div class="gm-info-row"><span>${esc(label)}</span><span>:</span><b>${esc(value)}</b></div>`}
   function updateMarksheetTitle(save=true){const title=$('markTitle').value.trim()||'STATEMENT OF MARKS';const heading=sheet.querySelector('.gm-title');if(heading)heading.textContent=title;if(save)localStorage.setItem('marksheet-title-v1',title)}
   function updateMarksheetPosition(save=true){const x=+$('markX').value||0,y=+$('markY').value||0;sheet.style.setProperty('--marksheet-x',x+'mm');sheet.style.setProperty('--marksheet-y',y+'mm');if(save)localStorage.setItem('marksheet-position-v1',JSON.stringify({x,y}))}
@@ -210,7 +216,7 @@
     const el=document.createElement('div');el.className='generated-marksheet';el.innerHTML=`<div class="gm-title">${esc(val('markTitle')||'STATEMENT OF MARKS')}</div><div class="gm-course">${esc(get('msCourse','programme'))}</div><div class="gm-exam">${esc(get('msExam','examination'))}</div><div class="gm-info"><div>${infoRow('Name of the Student',get('msName','student_name'))}${infoRow("Father's Name",get('msFather','father_name'))}${infoRow("Mother's Name",get('msMother','mother_name'))}${infoRow('Programme',get('msCourse','programme'))}${infoRow('Session',get('msSession','session'))}</div><div>${infoRow('DMC No.',get('msDmc','dmc_no'))}${infoRow('Roll No.',get('msRoll','roll_no'))}${infoRow('Enrollment No.',get('msEnroll','enrollment_no'))}${infoRow('Registration No.',get('msReg','registration_no'))}${infoRow('Semester',get('msSemester','semester'))}${infoRow('Examination Held',get('msHeld','exam_held'))}</div></div><table class="gm-table"><colgroup><col style="width:5%"><col style="width:8%"><col style="width:22%"><col span="6" style="width:6%"><col span="4" style="width:5.5%"><col style="width:7%"></colgroup><thead><tr><th rowspan="2">Sl.<br>No.</th><th rowspan="2">Course<br>Code</th><th rowspan="2">Course</th><th colspan="3">Total Marks</th><th colspan="3">Marks Secured</th><th rowspan="2">Credits</th><th rowspan="2">Grade<br>Point</th><th rowspan="2">Credit<br>Point</th><th rowspan="2">Grade</th><th rowspan="2">Remarks</th></tr><tr><th>Theory</th><th>Internal</th><th>Total</th><th>Theory</th><th>Internal</th><th>Total</th></tr></thead><tbody>${rows}<tr class="total-row"><td colspan="3">Grand Total</td><td>${total('maxT')}</td><td>${total('maxI')}</td><td>${total('max')}</td><td>${total('theory')}</td><td>${total('internal')}</td><td>${total('secured')}</td><td>${total('credits')}</td><td>-</td><td>${total('creditPoint')}</td><td>-</td><td>-</td></tr></tbody></table><div class="gm-summary"><div>S.G.P.A. : ${esc(get('msSgpa','sgpa'))}</div><div>C.G.P.A. : ${esc(get('msCgpa','cgpa'))}</div><div>Total Marks : ${esc(template?'{{total_marks}}':val('msTotalMarks')||totals.secured)}</div><div>Division : ${esc(get('msDivision','division'))}</div><div>Result : ${esc(get('msResult','result'))}</div><div>Earned Credit : ${esc(template?'{{earned_credit}}':subjectData().reduce((sum,s)=>sum+num(s.earnedCredit),0))}</div></div><div class="gm-note"><p><b>Important Note:</b> ${esc(get('msNote','note'))}</p><p>College / Department : ${esc(get('msCollege','college_department'))}</p><p>Checked By: ${esc(get('msCheckedBy','checked_by'))} &nbsp; Prepared By: ${esc(get('msPreparedBy','prepared_by'))} &nbsp; Registrar/Controller: ${esc(get('msRegistrar','registrar'))}</p></div>`;sheet.appendChild(el);updateMarksheetPosition(false);$('empty').style.display='none';announce(template?'Blank format prepared':'Marksheet layout generated')
   }
   $('prepareFormat').addEventListener('click',()=>generateMarksheet(true));
-  $('generateMarksheet').addEventListener('click',generateMarksheet);
+  $('generateMarksheet').addEventListener('click',()=>{saveStudentRecord();generateMarksheet();$('marksheetBulk').close()});
   function compressBackground(file){return new Promise(resolve=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const maxW=1600,maxH=2263,ratio=Math.min(1,maxW/im.width,maxH/im.height),c=document.createElement('canvas');c.width=Math.round(im.width*ratio);c.height=Math.round(im.height*ratio);c.getContext('2d').drawImage(im,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(file)})}
   $('bgFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;bg.src=await compressBackground(file);bg.style.display='block';bg.style.visibility='visible';bgVisible=true;$('toggleBackground').textContent='Hide background';$('empty').style.display='none';announce('Background loaded — Save background dabayein')});
   $('bgOpacity').addEventListener('input',e=>bg.style.opacity=e.target.value/100);
@@ -241,7 +247,7 @@
   $('printBtn').addEventListener('click',()=>{document.body.classList.toggle('hide-bg-print',!$('printBackground').checked);fields.forEach(f=>f.el.classList.remove('selected'));window.print();if(selected)selected.el.classList.add('selected')});
   document.addEventListener('keydown',e=>{if(!selected||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;const d=e.shiftKey?1:.2;if(e.key==='ArrowUp')selected.y-=d;if(e.key==='ArrowDown')selected.y+=d;if(e.key==='ArrowLeft')selected.x-=d;if(e.key==='ArrowRight')selected.x+=d;selected.x=Math.max(0,selected.x);selected.y=Math.max(0,selected.y);renderField(selected);syncControls();e.preventDefault()});
   function refreshDashboard(){let saved=[];try{saved=JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]')}catch{}$('savedCount').textContent=saved.length;$('savedState').textContent=saved.length?'Saved layout available':'Naya setup shuru karein'}
-  function showEditor(doc='Marksheet'){ localStorage.setItem('active-document-v1',doc);$('editorTitle').textContent=doc+' Print Setup';$('marksheetBulk').classList.toggle('hidden',doc!=='Marksheet');$('prepareFormat').classList.toggle('hidden',doc!=='Marksheet');$('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');if(doc==='Marksheet')generateMarksheet(true);window.scrollTo(0,0) }
+  function showEditor(doc='Marksheet'){ localStorage.setItem('active-document-v1',doc);$('editorTitle').textContent=doc+' Print Setup';$('marksheetBulk').classList.toggle('hidden',doc!=='Marksheet');$('openStudentData').classList.toggle('hidden',doc!=='Marksheet');$('prepareFormat').classList.toggle('hidden',doc!=='Marksheet');$('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');if(doc==='Marksheet')generateMarksheet(true);window.scrollTo(0,0) }
   function showDashboard(){ localStorage.removeItem('active-document-v1');$('editor').classList.add('hidden');$('dashboard').classList.remove('hidden');refreshDashboard();window.scrollTo(0,0) }
   document.querySelectorAll('.open-doc').forEach(btn=>btn.addEventListener('click',()=>showEditor(btn.dataset.doc)));
   document.querySelectorAll('.side-link').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.side-link').forEach(v=>v.classList.remove('active'));btn.classList.add('active');if(btn.dataset.doc!=='Dashboard')showEditor(btn.dataset.doc)}));
