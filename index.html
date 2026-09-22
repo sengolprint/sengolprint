@@ -1,3 +1,4 @@
+OK
 <!doctype html>
 <html lang="hi">
 <head>
@@ -290,7 +291,7 @@
   function getDesignPresets(){try{return JSON.parse(localStorage.getItem('marksheet-design-presets-v1')||'{}')}catch{return {}}}
   function keepOnlyFont10Design(){const presets=getDesignPresets(),name=Object.keys(presets).find(key=>key.trim().toLowerCase()==='font 10');if(!name)return;const only={'font 10':presets[name]};localStorage.setItem('marksheet-design-presets-v1',JSON.stringify(only))}
   function captureCurrentDesign(){const cols=[...sheet.querySelectorAll('.gm-table colgroup[data-resize-cols] col')];return {markBoxStyles:structuredClone(markBoxStyles),tableLayout:structuredClone(tableLayout),tableCellStyles:structuredClone(tableCellStyles),columnWidths:cols.length?cols.map(col=>Math.round(col.getBoundingClientRect().width)):JSON.parse(localStorage.getItem('marksheet-column-widths-v1')||'[]'),position:{x:+$('markX').value||0,y:+$('markY').value||0},titleStyle:{font:$('markTitleFont').value,size:+$('markTitleSize').value||17,weight:$('markTitleWeight').value},savedAt:new Date().toISOString()}}
-  const FONT10_CLOUD_KEY='sengolprint-font-10-global-design-v1';
+  const FONT10_CLOUD_KEY='8a874e9e9c2d80710d05caf354bb3a94194b38d2ce73701fc935c42cbba47e2f';
   let font10SaveTimer=null,font10Syncing=false,font10ServerDesign=null,font10Applied=false;
   function storeFont10Design(design){localStorage.setItem('marksheet-design-presets-v1',JSON.stringify({'font 10':design}));refreshDesignPresetList('font 10')}
   async function saveFont10ServerDesign(){if(font10Syncing)return;const design=captureCurrentDesign();storeFont10Design(design);try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/save_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:FONT10_CLOUD_KEY,p_data:{designOnly:true,designName:'font 10',design,savedAt:new Date().toISOString()}})});if(!response.ok)await supabaseError(response,'Design server save failed');font10ServerDesign=design}catch(error){console.warn(error.message||'Design server save failed')}}
