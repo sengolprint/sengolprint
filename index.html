@@ -375,18 +375,24 @@
   }
   let semesterPosition={x:0,y:0};try{semesterPosition={...semesterPosition,...JSON.parse(localStorage.getItem('marksheet-semester-position-v1')||'{}')}}catch{}
   function applySemesterPosition(save=false){const wrap=sheet.querySelector('.gm-semester-wrap');if(wrap){wrap.style.setProperty('--semester-x',semesterPosition.x+'px');wrap.style.setProperty('--semester-y',semesterPosition.y+'px')}if(save)localStorage.setItem('marksheet-semester-position-v1',JSON.stringify(semesterPosition))}
+  let semesterUndoStack=[];
+  function semesterSnapshot(){return {html:sheet.querySelector('.gm-semester-grid tbody')?.innerHTML||'',position:{...semesterPosition}}}
+  function pushSemesterUndo(){semesterUndoStack.push(semesterSnapshot());if(semesterUndoStack.length>30)semesterUndoStack.shift()}
+  function undoSemesterChange(){const state=semesterUndoStack.pop(),body=sheet.querySelector('.gm-semester-grid tbody');if(!state||!body){announce('Undo ke liye koi change nahi hai');return}body.innerHTML=state.html;semesterPosition={...state.position};applySemesterPosition(true);makeSemesterCellsEditable();saveSemesterGrid();announce('Last table change undo ho gaya')}
   function saveSemesterGrid(){const body=sheet.querySelector('.gm-semester-grid tbody');if(!body)return;localStorage.setItem('marksheet-semester-grid-v1',body.innerHTML);scheduleFont10ServerSave()}
   function makeSemesterCellsEditable(){sheet.querySelectorAll('.gm-semester-grid th,.gm-semester-grid td').forEach((cell,i)=>{cell.contentEditable='true';cell.spellcheck=false;cell.classList.add('editable-mark-box');cell.dataset.boxKey='semester-'+i;applyBoxState(cell,markBoxStyles[cell.dataset.boxKey])})}
   function prepareSemesterEditor(){
     const wrap=sheet.querySelector('.gm-semester-wrap'),grid=wrap?.querySelector('.gm-semester-grid');if(!wrap||!grid)return;
     if(!wrap.dataset.gridRestored){const saved=localStorage.getItem('marksheet-semester-grid-v1');if(saved)grid.tBodies[0].innerHTML=saved;wrap.dataset.gridRestored='true'}
     applySemesterPosition(false);makeSemesterCellsEditable();
-    let tools=wrap.querySelector('.gm-semester-tools');if(!tools){tools=document.createElement('div');tools.className='gm-semester-tools';tools.contentEditable='false';tools.innerHTML='<button type="button" class="gm-semester-add-row">+ Row</button><button type="button" class="gm-semester-add-col">+ Column</button><button type="button" class="gm-semester-move">↕ Move table</button>';wrap.prepend(tools)}
+    let tools=wrap.querySelector('.gm-semester-tools');if(!tools){tools=document.createElement('div');tools.className='gm-semester-tools';tools.contentEditable='false';tools.innerHTML='<button type="button" class="gm-semester-undo">↶ Undo</button><button type="button" class="gm-semester-add-row">+ Row</button><button type="button" class="gm-semester-add-col">+ Column</button><button type="button" class="gm-semester-move">↕ Move table</button>';wrap.prepend(tools)}
     if(tools.dataset.bound)return;tools.dataset.bound='true';const handle=tools.querySelector('.gm-semester-move');let drag=null;
-    tools.querySelector('.gm-semester-add-row').addEventListener('click',()=>{const body=grid.tBodies[0],count=body.rows[0]?.cells.length||1,row=body.insertRow();for(let i=0;i<count;i++){const cell=row.insertCell();cell.textContent=i===0?'New Row':''}makeSemesterCellsEditable();saveSemesterGrid();announce('Semester table row added')});
-    tools.querySelector('.gm-semester-add-col').addEventListener('click',()=>{[...grid.rows].forEach((row,rowIndex)=>{const before=Math.max(1,row.cells.length-2),cell=row.insertCell(before);cell.textContent=rowIndex===0?'New':''});makeSemesterCellsEditable();saveSemesterGrid();announce('Semester table column added')});
+    tools.querySelector('.gm-semester-undo').addEventListener('click',undoSemesterChange);
+    tools.querySelector('.gm-semester-add-row').addEventListener('click',()=>{pushSemesterUndo();const body=grid.tBodies[0],count=body.rows[0]?.cells.length||1,row=body.insertRow();for(let i=0;i<count;i++){const cell=row.insertCell();cell.textContent=i===0?'New Row':''}makeSemesterCellsEditable();saveSemesterGrid();announce('Semester table row added')});
+    tools.querySelector('.gm-semester-add-col').addEventListener('click',()=>{pushSemesterUndo();[...grid.rows].forEach((row,rowIndex)=>{const before=Math.max(1,row.cells.length-2),cell=row.insertCell(before);cell.textContent=rowIndex===0?'New':''});makeSemesterCellsEditable();saveSemesterGrid();announce('Semester table column added')});
+    grid.addEventListener('focusin',e=>{if(e.target.matches('th,td'))pushSemesterUndo()});
     grid.addEventListener('input',saveSemesterGrid);
-    handle.addEventListener('pointerdown',e=>{e.preventDefault();handle.setPointerCapture(e.pointerId);drag={sx:e.clientX,sy:e.clientY,x:semesterPosition.x,y:semesterPosition.y}});
+    handle.addEventListener('pointerdown',e=>{e.preventDefault();pushSemesterUndo();handle.setPointerCapture(e.pointerId);drag={sx:e.clientX,sy:e.clientY,x:semesterPosition.x,y:semesterPosition.y}});
     handle.addEventListener('pointermove',e=>{if(!drag)return;semesterPosition.x=Math.round(drag.x+e.clientX-drag.sx);semesterPosition.y=Math.round(drag.y+e.clientY-drag.sy);applySemesterPosition(false)});
     const finish=()=>{if(!drag)return;drag=null;applySemesterPosition(true);scheduleFont10ServerSave()};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',finish)
   }
