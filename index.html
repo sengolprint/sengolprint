@@ -227,11 +227,13 @@
     <details id="designPanel" class="section">
       <summary>5. Design</summary>
       <div class="section-body">
-        <div class="row"><div><label for="designTop">Format top (mm)</label><input id="designTop" type="number" min="20" max="100" step="0.5" value="54" /></div><div><label for="designSide">Side margin (mm)</label><input id="designSide" type="number" min="2" max="25" step="0.5" value="5" /></div></div>
-        <div class="row"><div><label for="designTitle">Heading size (pt)</label><input id="designTitle" type="number" min="10" max="28" step="0.5" value="17" /></div><div><label for="designBody">Body size (pt)</label><input id="designBody" type="number" min="6" max="16" step="0.5" value="9" /></div></div>
-        <div class="row"><div><label for="designTable">Table size (pt)</label><input id="designTable" type="number" min="5" max="14" step="0.2" value="8.2" /></div><div><label for="designPadding">Row padding (mm)</label><input id="designPadding" type="number" min="0.3" max="4" step="0.1" value="1.2" /></div></div>
-        <button id="applyDesign" class="generate" type="button">Apply & Save Design</button>
-        <button id="resetDesign" class="secondary" type="button" style="width:100%;margin-top:7px">Reset Design</button>
+        <div class="hidden" aria-hidden="true">
+          <div class="row"><div><label for="designTop">Format top (mm)</label><input id="designTop" type="number" min="20" max="100" step="0.5" value="54" /></div><div><label for="designSide">Side margin (mm)</label><input id="designSide" type="number" min="2" max="25" step="0.5" value="5" /></div></div>
+          <div class="row"><div><label for="designTitle">Heading size (pt)</label><input id="designTitle" type="number" min="10" max="28" step="0.5" value="17" /></div><div><label for="designBody">Body size (pt)</label><input id="designBody" type="number" min="6" max="16" step="0.5" value="9" /></div></div>
+          <div class="row"><div><label for="designTable">Table size (pt)</label><input id="designTable" type="number" min="5" max="14" step="0.2" value="8.2" /></div><div><label for="designPadding">Row padding (mm)</label><input id="designPadding" type="number" min="0.3" max="4" step="0.1" value="1.2" /></div></div>
+          <button id="applyDesign" class="generate" type="button">Apply & Save Design</button>
+          <button id="resetDesign" class="secondary" type="button">Reset Design</button>
+        </div>
         <div style="border-top:1px solid #dce3ec;margin-top:10px;padding-top:5px">
           <label for="designPresetName">Design name</label><input id="designPresetName" type="text" placeholder="Example: Marksheet Design 1" />
           <div class="actions" style="margin-top:8px"><button id="saveDesignPreset" class="secondary" type="button">Save as New Design</button><button id="newDesignPreset" class="secondary" type="button">New Work</button></div>
