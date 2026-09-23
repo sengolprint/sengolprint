@@ -232,6 +232,13 @@
         <div class="row"><div><label for="designTable">Table size (pt)</label><input id="designTable" type="number" min="5" max="14" step="0.2" value="8.2" /></div><div><label for="designPadding">Row padding (mm)</label><input id="designPadding" type="number" min="0.3" max="4" step="0.1" value="1.2" /></div></div>
         <button id="applyDesign" class="generate" type="button">Apply & Save Design</button>
         <button id="resetDesign" class="secondary" type="button" style="width:100%;margin-top:7px">Reset Design</button>
+        <div style="border-top:1px solid #dce3ec;margin-top:10px;padding-top:5px">
+          <label for="designPresetName">Design name</label><input id="designPresetName" type="text" placeholder="Example: Marksheet Design 1" />
+          <div class="actions" style="margin-top:8px"><button id="saveDesignPreset" class="secondary" type="button">Save as New Design</button><button id="newDesignPreset" class="secondary" type="button">New Work</button></div>
+          <label for="designPresetList">Saved designs</label><select id="designPresetList"><option value="">Select design</option></select>
+          <div class="actions" style="margin-top:8px"><button id="loadDesignPreset" class="secondary" type="button">Load Design</button><button id="deleteDesignPreset" class="danger" type="button">Delete Design</button></div>
+          <p class="hint">Pehle design ka naam likhkar Save as New Design karein. Uske baad New Work se naya layout shuru karein.</p>
+        </div>
       </div>
     </details>
 
@@ -246,10 +253,6 @@
       <div class="actions" style="margin-top:8px"><button id="saveCloudData" class="secondary" type="button">☁ Save Cloud</button><button id="loadCloudData" class="secondary" type="button">↓ Load Cloud</button></div>
       <div id="cloudStatus" class="status" aria-live="polite"></div>
       <p class="hint">Doosre browser mein same Record ID aur PIN dalke Load Cloud dabayein.</p>
-      <label for="designPresetName">Design name</label><input id="designPresetName" type="text" placeholder="Example: Design 1" />
-      <div class="actions" style="margin-top:8px"><button id="saveDesignPreset" class="secondary" type="button">Save Design</button><button id="newDesignPreset" class="secondary" type="button">New Design</button></div>
-      <label for="designPresetList">Saved designs</label><select id="designPresetList"><option value="">Select design</option></select>
-      <div class="actions" style="margin-top:8px"><button id="loadDesignPreset" class="secondary" type="button">Load Design</button><button id="deleteDesignPreset" class="danger" type="button">Delete Design</button></div>
       </div>
       <label class="check" style="margin-top:14px"><input id="printBackground" type="checkbox" /><span>Background bhi print karein <small>(pre-printed hardcopy ke liye unchecked rakhein)</small></span></label>
       <button id="printBtn" class="primary" style="margin-top:14px">Print A4</button>
