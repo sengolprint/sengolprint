@@ -562,7 +562,7 @@
   $('hideControls').addEventListener('click',()=>{$('editor').classList.add('controls-hidden');localStorage.setItem('editor-controls-hidden','1')});
   $('showControls').addEventListener('click',()=>{$('editor').classList.remove('controls-hidden');localStorage.setItem('editor-controls-hidden','0')});
   if(localStorage.getItem('sidebar-collapsed')==='1')$('dashboard').classList.add('sidebar-collapsed');if(localStorage.getItem('editor-controls-hidden')==='1')$('editor').classList.add('controls-hidden');
-  try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} restoreBackground();updateCount();refreshDashboard();const activeDocument=localStorage.getItem('active-document-v1');loadFont10ServerDesign().then(initializeNamedDesigns).finally(()=>{if(activeDocument)showEditor(activeDocument)});
+  try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} restoreBackground();updateCount();refreshDashboard();localStorage.removeItem('active-document-v1');loadFont10ServerDesign().then(initializeNamedDesigns);
 </script>
 </body>
 </html>
