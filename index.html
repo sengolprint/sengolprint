@@ -95,6 +95,7 @@
     .student-dialog.maximized .student-dialog-body{padding-left:8px!important;padding-right:8px!important}
     .student-dialog.maximized .setup-sheet.pdf-form{box-sizing:border-box;width:100%!important;max-width:none!important;margin:8px 0!important}
     .student-dialog.maximized .pdf-signatures{grid-template-columns:1fr 1fr}
+    .date-issue-entry{display:grid;grid-template-columns:150px minmax(180px,320px);align-items:center;gap:10px;padding:16px 18px}.date-issue-entry label{margin:0!important;font-weight:750}.student-dialog .date-issue-entry input{box-sizing:border-box;width:100%;border:1px solid #cbd5e1!important;border-radius:8px!important;padding:8px 10px!important;background:#fff}
   </style>
 </head>
 <body>
@@ -161,7 +162,7 @@
         <input id="msTotalMarks" type="hidden"><input id="msDivision" type="hidden"><span id="marksEarnedCredit" style="display:none">0</span>
         <input id="msNote" type="hidden" value="">
         <input id="msCollege" type="hidden" />
-        <input id="msCheckedBy" type="hidden"><input id="msPreparedBy" type="hidden"><div class="pdf-signatures"><div><input id="msDateIssue" type="text" /><label>Date of Issue</label></div><div><input id="msRegistrar" type="text" /><label>Controller of Examination</label></div></div>
+        <input id="msCheckedBy" type="hidden"><input id="msPreparedBy" type="hidden"><input id="msRegistrar" type="hidden"><div class="date-issue-entry"><label for="msDateIssue">Date of Issue</label><input id="msDateIssue" type="text" placeholder="DD/MM/YYYY" /></div>
         <div class="pdf-form-section">Verification Images & Data</div>
         <div class="verification-data-grid"><div class="pdf-field"><label>Barcode में क्या encode करना है</label><input id="msBarcodeText" type="text" placeholder="Enrollment / DMC / verification value"></div><div class="pdf-field"><label>Barcode Image (optional)</label><input id="msBarcodeImage" type="file" accept="image/*"></div><div class="pdf-field"><label>QR Code में क्या encode करना है</label><textarea id="msQrText" rows="3" placeholder="Verification URL या student details"></textarea></div><div class="pdf-field"><label>QR Image (optional)</label><input id="msQrImage" type="file" accept="image/*"></div><div class="pdf-field"><label>Signature Image</label><input id="msSignatureImage" type="file" accept="image/*"></div></div>
         <div class="actions" style="margin-top:12px"><button id="saveStudentData" class="secondary" type="button">Save Student Data</button><button id="clearStudentData" class="danger" type="button">Clear Data</button></div>
