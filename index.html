@@ -464,7 +464,7 @@
     activeNamedDesign=requiredName;namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);
     const activeRecord=namedDesigns[activeNamedDesign];if(activeRecord)applyNamedDesignRecord(activeRecord);
     if(doc==='Marksheet'){namedDesignBackups=Array.isArray(server?.backups)?server.backups:[];setNamedDesignStatus('✓ '+Object.keys(namedDesigns).length+' designs safe · '+namedDesignBackups.length+' backups available')}
-    else setNamedDesignStatus('✓ '+Object.keys(namedDesigns).length+' '+currentDocument+' design server par ready')
+    else setNamedDesignStatus('✓ '+Object.keys(namedDesigns).filter(name=>name.startsWith(designPrefix(doc)+' ')).length+' '+currentDocument+' design server par ready')
   }
   function nextNamedDesign(){const prefix=designPrefix();let number=2;while(namedDesigns[`${prefix} ${number}`])number++;return `${prefix} ${number}`}
   function applyNamedDesignRecord(record){
