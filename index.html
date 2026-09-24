@@ -502,7 +502,18 @@
   $('editor').querySelector('main').insertBefore(provisionalBoxEditor,$('editor').querySelector('.sheet-wrap'));
   ['provFont','provSize','provWidth','provHeight','provWeight','provCase','provBorder'].forEach(id=>$(id).addEventListener(id==='provFont'||id==='provWeight'||id==='provCase'||id==='provBorder'?'change':'input',updateProvisionalBox));
   document.addEventListener('selectionchange',rememberProvisionalTextSelection);
-  ensureProvisionalGrid().addEventListener('pointerdown',e=>{if(provisionalDirectMove)return;const box=e.target.closest('[data-provisional-box]');if(box)selectProvisionalBox(box,e.target)},true);
+  function provisionalLineRangeFromPoint(event,cell){
+    let node=null,offset=0;
+    if(document.caretPositionFromPoint){const pos=document.caretPositionFromPoint(event.clientX,event.clientY);node=pos?.offsetNode;offset=pos?.offset||0}
+    else if(document.caretRangeFromPoint){const pos=document.caretRangeFromPoint(event.clientX,event.clientY);node=pos?.startContainer;offset=pos?.startOffset||0}
+    if(!node||!cell.contains(node))return null;
+    if(node.nodeType!==3){const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);node=walker.nextNode();offset=0}
+    if(!node||node.nodeType!==3)return null;
+    const text=node.data||'';let start=text.lastIndexOf('\n',Math.max(0,offset-1))+1,end=text.indexOf('\n',offset);if(end<0)end=text.length;
+    while(start<end&&/\s/.test(text[start]))start++;while(end>start&&/\s/.test(text[end-1]))end--;
+    if(end<=start)return null;const range=document.createRange();range.setStart(node,start);range.setEnd(node,end);return range
+  }
+  ensureProvisionalGrid().addEventListener('pointerdown',e=>{if(provisionalDirectMove)return;const box=e.target.closest('[data-provisional-box]');if(box){selectProvisionalBox(box,e.target);const lineRange=provisionalLineRangeFromPoint(e,box);if(lineRange)provisionalSavedRange=lineRange}},true);
   ensureProvisionalGrid().addEventListener('mouseup',()=>setTimeout(rememberProvisionalTextSelection,0));
   ensureProvisionalGrid().addEventListener('keyup',rememberProvisionalTextSelection);
   provisionalBoxEditor.addEventListener('pointerdown',rememberProvisionalTextSelection,true);
