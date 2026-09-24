@@ -404,11 +404,18 @@
   }
   async function saveNamedDesignsServer(doc=currentDocument){if(namedDesignSyncing)return false;namedDesignSyncing=true;try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/save_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:namedDesignCloudKey(doc),p_data:{designLibrary:true,document:doc,designs:namedDesigns,updatedAt:new Date().toISOString()}})});if(!response.ok)await supabaseError(response,'Design library save failed');return true}catch(error){console.warn(error.message||'Design library save failed');return false}finally{namedDesignSyncing=false}}
   async function initializeNamedDesigns(doc=currentDocument){
-    namedDesigns=readNamedDesignsLocal(doc);activeNamedDesign=Object.keys(namedDesigns)[0]||'';namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);setNamedDesignStatus(doc+' designs loading...');
-    try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/load_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:namedDesignCloudKey(doc)})});if(response.ok){const data=await response.json();if(doc===currentDocument&&data?.designLibrary&&data.document===doc&&data.designs&&Object.keys(data.designs).length)namedDesigns=data.designs}}catch(error){console.warn('Design library load failed')}
+    const localDesigns=readNamedDesignsLocal(doc);let serverDesigns={};
+    if(doc===currentDocument){namedDesigns=localDesigns;activeNamedDesign=Object.keys(namedDesigns)[0]||'';namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);setNamedDesignStatus(doc+' designs loading...')}
+    try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/load_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:namedDesignCloudKey(doc)})});if(response.ok){const data=await response.json();if(data?.designLibrary&&data.document===doc&&data.designs)serverDesigns=data.designs}}catch(error){console.warn('Design library load failed')}
     if(doc!==currentDocument)return;
-    if(!Object.keys(namedDesigns).length){namedDesigns['Design 1']=captureNamedDesignRecord();saveNamedDesignsLocal(doc);await saveNamedDesignsServer(doc)}else saveNamedDesignsLocal(doc);
-    activeNamedDesign=Object.keys(namedDesigns)[0]||'Design 1';namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);setNamedDesignStatus(doc+' ka separate design ready')
+    namedDesigns={...serverDesigns};
+    Object.entries(localDesigns).forEach(([name,record])=>{const server=namedDesigns[name],localTime=Date.parse(record?.savedAt||0)||0,serverTime=Date.parse(server?.savedAt||0)||0;if(!server||localTime>=serverTime)namedDesigns[name]=record});
+    if(!Object.keys(namedDesigns).length)namedDesigns['Design 1']=captureNamedDesignRecord();
+    saveNamedDesignsLocal(doc);
+    if(Object.keys(localDesigns).some(name=>!serverDesigns[name]||namedDesigns[name]!==serverDesigns[name]))await saveNamedDesignsServer(doc);
+    activeNamedDesign=Object.keys(namedDesigns)[0]||'Design 1';namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);
+    const activeRecord=namedDesigns[activeNamedDesign];if(activeRecord)applyNamedDesignRecord(activeRecord);
+    setNamedDesignStatus('✓ '+Object.keys(namedDesigns).length+' '+doc+' design server par ready')
   }
   function nextNamedDesign(){let number=2;while(namedDesigns[`Design ${number}`])number++;return `Design ${number}`}
   function applyNamedDesignRecord(record){
