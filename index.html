@@ -408,7 +408,9 @@
     try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/load_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:namedDesignCloudKey(doc)})});if(response.ok){const data=await response.json();if(doc===currentDocument&&data?.designLibrary&&data.document===doc&&data.designs&&Object.keys(data.designs).length)namedDesigns=data.designs}}catch(error){console.warn('Design library load failed')}
     if(doc!==currentDocument)return;
     if(!Object.keys(namedDesigns).length){namedDesigns['Design 1']=captureNamedDesignRecord();saveNamedDesignsLocal(doc);await saveNamedDesignsServer(doc)}else saveNamedDesignsLocal(doc);
-    activeNamedDesign=Object.keys(namedDesigns)[0]||'Design 1';namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);setNamedDesignStatus(doc+' ka separate design ready')
+    activeNamedDesign=Object.keys(namedDesigns)[0]||'Design 1';namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);
+    if(doc==='Provisional'&&namedDesigns[activeNamedDesign])applyNamedDesignRecord(namedDesigns[activeNamedDesign]);
+    setNamedDesignStatus(doc+' ka separate design ready')
   }
   function nextNamedDesign(){let number=2;while(namedDesigns[`Design ${number}`])number++;return `Design ${number}`}
   function applyNamedDesignRecord(record){
@@ -623,7 +625,7 @@
   $('createNamedDesign').addEventListener('click',async()=>{const originalName=activeNamedDesign||'Design 1';if(!namedDesigns[originalName])namedDesigns[originalName]=captureNamedDesignRecord();const name=nextNamedDesign();namedDesigns[name]=structuredClone(captureNamedDesignRecord());namedDesigns[name].savedAt=null;activeNamedDesign=name;namedDesignDraft=true;saveNamedDesignsLocal();refreshNamedDesignUI(name);setNamedDesignStatus(`${name} ready — isme changes karein; ${originalName} safe rahega`);await saveNamedDesignsServer();announce(name+' ki separate copy ready')});
   $('loadNamedDesign').addEventListener('click',()=>{const name=$('namedDesignList').value,record=namedDesigns[name];if(!record||!applyNamedDesignRecord(record)){setNamedDesignStatus('Pehle saved design select karein',true);return}activeNamedDesign=name;namedDesignDraft=false;refreshNamedDesignUI(name);setNamedDesignStatus(`✓ ${name} loaded`);announce(name+' loaded')});
   $('namedDesignName').addEventListener('input',()=>{if($('namedDesignName').value.trim()!==activeNamedDesign){namedDesignDraft=true;$('currentDesignLabel').textContent='Current: New Design (Editing)'}});
-  let provisionalSelectedCell=null,provisionalSelectedId='',provisionalDirectMove=false,provisionalDrag=null,provisionalSavedRange=null,provisionalMultiSelect=false,provisionalSelectedBoxes=[];
+  let provisionalSelectedCell=null,provisionalSelectedId='',provisionalDirectMove=false,provisionalDrag=null,provisionalSavedRange=null,provisionalMultiSelect=false,provisionalSelectedBoxes=[],provisionalCloudSaveTimer=null;
   function activeProvisionalBox(){if(!provisionalSelectedId)return null;return [...ensureProvisionalGrid().querySelectorAll('[data-provisional-box]')].find(box=>box.dataset.provisionalBox===provisionalSelectedId)||null}
   function provisionalTargets(){const selected=provisionalSelectedBoxes.filter(box=>box?.isConnected);return provisionalMultiSelect&&selected.length?selected:(activeProvisionalBox()?[activeProvisionalBox()]:[])}
   function refreshProvisionalSelection(){const selected=new Set(provisionalSelectedBoxes);ensureProvisionalGrid().querySelectorAll('[data-provisional-box]').forEach(box=>box.classList.toggle('provisional-selected',selected.has(box)))}
@@ -708,7 +710,11 @@
     saveProvisionalGrid();announce(axis==='row'?'Boxes same row me aligned':'Boxes same column me aligned');
   }
   function defaultProvisionalGrid(){return `<div class="provisional-text-box" data-provisional-box="1" contenteditable="true" style="left:20mm;top:35mm">Type text here</div><div class="provisional-text-box" data-provisional-box="2" contenteditable="true" style="left:20mm;top:60mm">Type text here</div>`}
-  function saveProvisionalGrid(){const grid=$('provisionalGrid');if(grid)localStorage.setItem('provisional-grid-v1',grid.innerHTML)}
+  function scheduleProvisionalCloudSave(){
+    clearTimeout(provisionalCloudSaveTimer);
+    provisionalCloudSaveTimer=setTimeout(async()=>{if(currentDocument!=='Provisional'||!activeNamedDesign)return;try{await saveActiveNamedDesign();setNamedDesignStatus('✓ Provisional design auto-saved on server')}catch{setNamedDesignStatus('Auto-save failed — Save Current Layout दबाएँ',true)}},1200);
+  }
+  function saveProvisionalGrid(){const grid=$('provisionalGrid');if(grid){localStorage.setItem('provisional-grid-v1',grid.innerHTML);scheduleProvisionalCloudSave()}}
   function ensureProvisionalGrid(){if(localStorage.getItem('provisional-grid-schema')!=='free-text-v1'){localStorage.removeItem('provisional-grid-v1');localStorage.removeItem('provisional-layout-v1');localStorage.setItem('provisional-grid-schema','free-text-v1')}let grid=$('provisionalGrid');if(!grid){grid=document.createElement('div');grid.id='provisionalGrid';grid.className='provisional-grid';grid.innerHTML=localStorage.getItem('provisional-grid-v1')||defaultProvisionalGrid();sheet.appendChild(grid);grid.addEventListener('click',e=>{const box=e.target.closest('[data-provisional-box]');if(!box)return;selectProvisionalBox(box)});grid.addEventListener('input',saveProvisionalGrid)}return grid}
   function selectedProvisionalCell(){if(!provisionalSelectedCell||!provisionalSelectedCell.isConnected){announce('Pehle Provisional text box select karein');return null}return provisionalSelectedCell}
   $('provisionalAddBox').addEventListener('click',()=>{const grid=ensureProvisionalGrid(),count=grid.querySelectorAll('[data-provisional-box]').length,box=document.createElement('div');box.className='provisional-text-box';box.dataset.provisionalBox=String(Date.now());box.contentEditable='true';box.textContent='New text box';box.style.left='20mm';box.style.top=(35+count*20)+'mm';grid.appendChild(box);saveProvisionalGrid();selectProvisionalBox(box);box.focus();announce('New text box added')});
