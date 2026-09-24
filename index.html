@@ -703,7 +703,16 @@
   function rememberProvisionalTextSelection(){
     const selection=window.getSelection();if(!selection||!selection.rangeCount||selection.isCollapsed)return;
     const range=selection.getRangeAt(0),cell=activeProvisionalBox();
-    if(cell&&cell.contains(range.commonAncestorContainer))provisionalSavedRange=range.cloneRange();
+    if(cell&&cell.contains(range.commonAncestorContainer)){
+      provisionalSavedRange=range.cloneRange();
+      const node=range.startContainer.nodeType===1?range.startContainer:range.startContainer.parentElement;
+      const cs=getComputedStyle(node&&cell.contains(node)?node:cell),weight=+cs.fontWeight;
+      const fontOption=[...$('provFont').options].find(option=>cs.fontFamily.includes(option.value));
+      $('provFont').value=fontOption?.value||'Times New Roman';
+      $('provSize').value=Math.max(6,Math.round(Number(cs.fontSize.replace('px',''))*.75));
+      $('provWeight').value=(weight>=700?'700':(weight>=500?'600':'400'))+'-'+(cs.fontStyle==='italic'?'italic':'normal');
+      $('provCase').value=['uppercase','lowercase','capitalize'].includes(cs.textTransform)?cs.textTransform:'none'
+    }
   }
   function provisionalTextRange(){
     const cell=activeProvisionalBox(),range=provisionalSavedRange;
