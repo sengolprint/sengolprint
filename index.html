@@ -452,6 +452,10 @@
   provisionalBoxEditor.innerHTML='<label>Font<select id="provFont"><option>Times New Roman</option><option>Arial</option><option>Georgia</option><option>Cambria</option><option>Verdana</option></select></label><label>Size<input id="provSize" type="number" min="6" max="48" value="12"></label><label>Width (px)<input id="provWidth" type="number" min="40" max="1500" placeholder="Auto"></label><button id="provAutoWidth" type="button">Auto Width</button><label>Height<input id="provHeight" type="number" min="0" max="800" placeholder="Auto"></label><label>Style<select id="provWeight"><option value="700">Bold</option><option value="600">Semi Bold</option><option value="400">Normal</option></select></label><label>Case<select id="provCase"><option value="none">As Typed</option><option value="uppercase">UPPERCASE</option><option value="lowercase">lowercase</option><option value="capitalize">Title Case</option></select></label><label>Border<select id="provBorder"><option value="show">Show</option><option value="hide">Hide</option></select></label><button id="provDirectMove" class="provisional-direct-move" type="button">Direct Move: OFF</button><div class="box-move-controls"><button type="button" data-pmove="-1,0">←</button><button type="button" data-pmove="0,-1">↑</button><button type="button" data-pmove="0,1">↓</button><button type="button" data-pmove="1,0">→</button></div>';
   $('editor').querySelector('main').insertBefore(provisionalBoxEditor,$('editor').querySelector('.sheet-wrap'));
   ['provFont','provSize','provWidth','provHeight','provWeight','provCase','provBorder'].forEach(id=>$(id).addEventListener(id==='provFont'||id==='provWeight'||id==='provCase'||id==='provBorder'?'change':'input',updateProvisionalBox));
+  document.addEventListener('selectionchange',rememberProvisionalTextSelection);
+  ensureProvisionalGrid().addEventListener('mouseup',rememberProvisionalTextSelection);
+  ensureProvisionalGrid().addEventListener('keyup',rememberProvisionalTextSelection);
+  provisionalBoxEditor.addEventListener('pointerdown',rememberProvisionalTextSelection,true);
   $('provAutoWidth').addEventListener('click',()=>{const box=activeProvisionalBox();if(!box)return;$('provWidth').value='';box.style.setProperty('width','auto','important');box.style.setProperty('min-width','25mm','important');saveProvisionalGrid()});
   $('provDirectMove').addEventListener('click',()=>{provisionalDirectMove=!provisionalDirectMove;$('provDirectMove').classList.toggle('active',provisionalDirectMove);$('provDirectMove').textContent=provisionalDirectMove?'Direct Move: ON':'Direct Move: OFF';ensureProvisionalGrid().classList.toggle('direct-move',provisionalDirectMove)});
   const startProvisionalDrag=e=>{if(!provisionalDirectMove)return;const box=e.target.closest('[data-provisional-box]');if(!box)return;e.preventDefault();selectProvisionalBox(box);provisionalDrag={box,startX:e.clientX,startY:e.clientY,baseX:+box.dataset.moveX||0,baseY:+box.dataset.moveY||0};box.setPointerCapture?.(e.pointerId)};
@@ -615,9 +619,10 @@
   $('createNamedDesign').addEventListener('click',async()=>{const originalName=activeNamedDesign||'Design 1';if(!namedDesigns[originalName])namedDesigns[originalName]=captureNamedDesignRecord();const name=nextNamedDesign();namedDesigns[name]=structuredClone(captureNamedDesignRecord());namedDesigns[name].savedAt=null;activeNamedDesign=name;namedDesignDraft=true;saveNamedDesignsLocal();refreshNamedDesignUI(name);setNamedDesignStatus(`${name} ready — isme changes karein; ${originalName} safe rahega`);await saveNamedDesignsServer();announce(name+' ki separate copy ready')});
   $('loadNamedDesign').addEventListener('click',()=>{const name=$('namedDesignList').value,record=namedDesigns[name];if(!record||!applyNamedDesignRecord(record)){setNamedDesignStatus('Pehle saved design select karein',true);return}activeNamedDesign=name;namedDesignDraft=false;refreshNamedDesignUI(name);setNamedDesignStatus(`✓ ${name} loaded`);announce(name+' loaded')});
   $('namedDesignName').addEventListener('input',()=>{if($('namedDesignName').value.trim()!==activeNamedDesign){namedDesignDraft=true;$('currentDesignLabel').textContent='Current: New Design (Editing)'}});
-  let provisionalSelectedCell=null,provisionalSelectedId='',provisionalDirectMove=false,provisionalDrag=null;
+  let provisionalSelectedCell=null,provisionalSelectedId='',provisionalDirectMove=false,provisionalDrag=null,provisionalSavedRange=null;
   function activeProvisionalBox(){if(!provisionalSelectedId)return null;return [...ensureProvisionalGrid().querySelectorAll('[data-provisional-box]')].find(box=>box.dataset.provisionalBox===provisionalSelectedId)||null}
   function selectProvisionalBox(cell){
+    if(provisionalSelectedCell!==cell)provisionalSavedRange=null;
     provisionalSelectedCell=cell;provisionalSelectedId=cell.dataset.provisionalBox||'';
     const grid=$('provisionalGrid');
     if(grid)grid.querySelectorAll('.provisional-selected').forEach(v=>v.classList.toggle('provisional-selected',v===cell));
@@ -632,10 +637,38 @@
     $('provCase').value=['uppercase','lowercase','capitalize'].includes(cs.textTransform)?cs.textTransform:'none';
     $('provBorder').value=cell.style.border==='none'?'hide':'show';
   }
-  function updateProvisionalBox(){
+  function rememberProvisionalTextSelection(){
+    const selection=window.getSelection();if(!selection||!selection.rangeCount||selection.isCollapsed)return;
+    const range=selection.getRangeAt(0),cell=activeProvisionalBox();
+    if(cell&&cell.contains(range.commonAncestorContainer))provisionalSavedRange=range.cloneRange();
+  }
+  function provisionalTextRange(){
+    const cell=activeProvisionalBox(),range=provisionalSavedRange;
+    if(!cell||!range||range.collapsed||!cell.contains(range.commonAncestorContainer))return null;
+    return range.cloneRange();
+  }
+  function styleProvisionalSelection(styles){
+    const range=provisionalTextRange();if(!range)return false;
+    const span=document.createElement('span');Object.assign(span.style,styles);
+    try{const fragment=range.extractContents();span.appendChild(fragment);range.insertNode(span)}
+    catch{return false}
+    const next=document.createRange();next.selectNodeContents(span);provisionalSavedRange=next.cloneRange();
+    const selection=window.getSelection();selection.removeAllRanges();selection.addRange(next);
+    return true;
+  }
+  function updateProvisionalBox(event){
     const cell=activeProvisionalBox();if(!cell)return;
     const font=$('provFont').value,size=Math.max(6,Math.min(48,+$('provSize').value||12)),weight=$('provWeight').value,caseMode=$('provCase').value,borderMode=$('provBorder').value;
-    cell.style.setProperty('font-family',font,'important');cell.style.setProperty('font-size',size+'pt','important');cell.style.setProperty('font-weight',weight,'important');cell.style.setProperty('text-transform',caseMode,'important');cell.style.setProperty('border',borderMode==='hide'?'none':'.25mm solid #000','important');
+    const sourceId=event?.currentTarget?.id||'',selectionStyles={};
+    if(sourceId==='provFont')selectionStyles.fontFamily=font;
+    if(sourceId==='provSize')selectionStyles.fontSize=size+'pt';
+    if(sourceId==='provWeight')selectionStyles.fontWeight=weight;
+    if(sourceId==='provCase')selectionStyles.textTransform=caseMode;
+    const selected=Object.keys(selectionStyles).length&&styleProvisionalSelection(selectionStyles);
+    if(!selected){
+      cell.style.setProperty('font-family',font,'important');cell.style.setProperty('font-size',size+'pt','important');cell.style.setProperty('font-weight',weight,'important');cell.style.setProperty('text-transform',caseMode,'important');
+    }
+    cell.style.setProperty('border',borderMode==='hide'?'none':'.25mm solid #000','important');
     const width=+$('provWidth').value||0,height=+$('provHeight').value||0;
     cell.style.setProperty('width',width?width+'px':'auto','important');cell.style.setProperty('min-width',width?width+'px':'25mm','important');cell.style.setProperty('height',height?height+'px':'auto','important');
     saveProvisionalGrid();
