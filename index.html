@@ -400,7 +400,7 @@
     namedDesignBackups=Array.isArray(server?.backups)?server.backups:[];
     namedDesigns={...localDesigns,...serverDesigns};
     if(!namedDesigns['Design 1']){const original=font10ServerDesign||captureCurrentDesign();namedDesigns['Design 1']={design:structuredClone(original),background:font10Background(),savedAt:new Date().toISOString()};await saveNamedDesignsServer()}
-    saveNamedDesignsLocal();activeNamedDesign=Object.keys(namedDesigns)[0]||'Design 1';namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);
+    saveNamedDesignsLocal();activeNamedDesign=namedDesigns['Design 1']?'Design 1':(Object.keys(namedDesigns)[0]||'Design 1');namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);
     if(namedDesigns[activeNamedDesign])applyNamedDesignRecord(namedDesigns[activeNamedDesign]);
     setNamedDesignStatus('✓ '+Object.keys(namedDesigns).length+' designs safe · '+namedDesignBackups.length+' backups available')
   }
@@ -604,7 +604,7 @@
   $('printBtn').addEventListener('click',()=>{document.body.classList.toggle('hide-bg-print',!$('printBackground').checked);fields.forEach(f=>f.el.classList.remove('selected'));window.print();if(selected)selected.el.classList.add('selected')});
   document.addEventListener('keydown',e=>{if(!selected||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;const d=e.shiftKey?1:.2;if(e.key==='ArrowUp')selected.y-=d;if(e.key==='ArrowDown')selected.y+=d;if(e.key==='ArrowLeft')selected.x-=d;if(e.key==='ArrowRight')selected.x+=d;selected.x=Math.max(0,selected.x);selected.y=Math.max(0,selected.y);renderField(selected);syncControls();e.preventDefault()});
   function refreshDashboard(){let saved=[];try{saved=JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]')}catch{}$('savedCount').textContent=saved.length;$('savedState').textContent=saved.length?'Saved layout available':'Naya setup shuru karein'}
-  function showEditor(doc='Marksheet'){ localStorage.setItem('active-document-v1',doc);document.querySelectorAll('.side-link').forEach(v=>v.classList.toggle('active',v.dataset.doc===doc));$('editorTitle').textContent=doc+' Print Setup';$('marksheetBulk').classList.toggle('hidden',doc!=='Marksheet');$('prepareFormat').classList.toggle('hidden',doc!=='Marksheet');$('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');if(doc==='Marksheet'){if(!sheet.querySelector('.generated-marksheet')){generateMarksheet(true);syncGeneratedTable()}applyFont10ServerDesign()}window.scrollTo(0,0) }
+  function showEditor(doc='Marksheet'){ localStorage.setItem('active-document-v1',doc);document.querySelectorAll('.side-link').forEach(v=>v.classList.toggle('active',v.dataset.doc===doc));$('editorTitle').textContent=doc+' Print Setup';$('marksheetBulk').classList.toggle('hidden',doc!=='Marksheet');$('prepareFormat').classList.toggle('hidden',doc!=='Marksheet');$('dashboard').classList.add('hidden');$('editor').classList.remove('hidden');if(doc==='Marksheet'){if(!sheet.querySelector('.generated-marksheet')){generateMarksheet(true);syncGeneratedTable()}setNamedDesignStatus('Design 1 loading...');initializeNamedDesigns()}window.scrollTo(0,0) }
   function showDashboard(){ localStorage.removeItem('active-document-v1');$('editor').classList.add('hidden');$('dashboard').classList.remove('hidden');refreshDashboard();window.scrollTo(0,0) }
   document.querySelectorAll('.open-doc').forEach(btn=>btn.addEventListener('click',()=>showEditor(btn.dataset.doc)));
   document.querySelectorAll('.side-link[data-doc]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.doc==='Dashboard'){showDashboard();document.querySelectorAll('.side-link').forEach(v=>v.classList.toggle('active',v.dataset.doc==='Dashboard'))}else showEditor(btn.dataset.doc)}));
@@ -613,7 +613,7 @@
   $('hideControls').addEventListener('click',()=>{$('editor').classList.add('controls-hidden');localStorage.setItem('editor-controls-hidden','1')});
   $('showControls').addEventListener('click',()=>{$('editor').classList.remove('controls-hidden');localStorage.setItem('editor-controls-hidden','0')});
   if(localStorage.getItem('sidebar-collapsed')==='1')$('dashboard').classList.add('sidebar-collapsed');if(localStorage.getItem('editor-controls-hidden')==='1')$('editor').classList.add('controls-hidden');
-  try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} restoreBackground();updateCount();refreshDashboard();localStorage.removeItem('active-document-v1');loadFont10ServerDesign().then(initializeNamedDesigns);
+  try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} restoreBackground();updateCount();refreshDashboard();localStorage.removeItem('active-document-v1');initializeNamedDesigns();
 </script>
 </body>
 </html>
