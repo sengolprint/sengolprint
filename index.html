@@ -487,7 +487,7 @@
   $('editor').querySelector('main').insertBefore(provisionalBoxEditor,$('editor').querySelector('.sheet-wrap'));
   ['provFont','provSize','provWidth','provHeight','provWeight','provCase','provBorder'].forEach(id=>$(id).addEventListener(id==='provFont'||id==='provWeight'||id==='provCase'||id==='provBorder'?'change':'input',updateProvisionalBox));
   document.addEventListener('selectionchange',rememberProvisionalTextSelection);
-  ensureProvisionalGrid().addEventListener('pointerdown',e=>{if(provisionalDirectMove)return;const box=e.target.closest('[data-provisional-box]');if(box&&box!==activeProvisionalBox())selectProvisionalBox(box)},true);
+  ensureProvisionalGrid().addEventListener('pointerdown',e=>{if(provisionalDirectMove)return;const box=e.target.closest('[data-provisional-box]');if(box)selectProvisionalBox(box,e.target)},true);
   ensureProvisionalGrid().addEventListener('mouseup',()=>setTimeout(rememberProvisionalTextSelection,0));
   ensureProvisionalGrid().addEventListener('keyup',rememberProvisionalTextSelection);
   provisionalBoxEditor.addEventListener('pointerdown',rememberProvisionalTextSelection,true);
@@ -671,7 +671,7 @@
   function activeProvisionalBox(){if(!provisionalSelectedId)return null;return [...ensureProvisionalGrid().querySelectorAll('[data-provisional-box]')].find(box=>box.dataset.provisionalBox===provisionalSelectedId)||null}
   function provisionalTargets(){const selected=provisionalSelectedBoxes.filter(box=>box?.isConnected);return provisionalMultiSelect&&selected.length?selected:(activeProvisionalBox()?[activeProvisionalBox()]:[])}
   function refreshProvisionalSelection(){const selected=new Set(provisionalSelectedBoxes);ensureProvisionalGrid().querySelectorAll('[data-provisional-box]').forEach(box=>box.classList.toggle('provisional-selected',selected.has(box)))}
-  function selectProvisionalBox(cell){
+  function selectProvisionalBox(cell,styleTarget=cell){
     if(provisionalSelectedCell!==cell)provisionalSavedRange=null;
     if(provisionalMultiSelect){
       const index=provisionalSelectedBoxes.indexOf(cell);
@@ -681,7 +681,7 @@
     refreshProvisionalSelection();
     const editor=$('provisionalBoxEditor');if(!editor)return;
     editor.classList.add('active');
-    const cs=getComputedStyle(cell),weight=+cs.fontWeight;
+    const cs=getComputedStyle(styleTarget?.nodeType===1?styleTarget:cell),weight=+cs.fontWeight;
     $('provFont').value=[...$('provFont').options].find(o=>cs.fontFamily.includes(o.value))?.value||'Times New Roman';
     $('provSize').value=Math.round(parseFloat(cs.fontSize)*.75)||12;
     $('provWidth').value=cell.style.width?Math.round(parseFloat(cell.style.width)):'';
@@ -734,7 +734,13 @@
     const selected=sourceId==='provFont'?applyProvisionalFontSelection(font):(Object.keys(selectionStyles).length&&styleProvisionalSelection(selectionStyles));
     const width=+$('provWidth').value||0,height=+$('provHeight').value||0;
     targets.forEach(box=>{
-      if(!selected){box.style.setProperty('font-family',font,'important');box.style.setProperty('font-style',font==='Agency FB'?'italic':fontStyle,'important');box.style.setProperty('font-size',size+'pt','important');box.style.setProperty('font-weight',weight,'important');box.style.setProperty('text-transform',caseMode,'important')}
+      if(!selected){
+        const descendants=[...box.querySelectorAll('*')];
+        if(sourceId==='provFont'){box.style.setProperty('font-family',font,'important');box.style.setProperty('font-style',font==='Agency FB'?'italic':fontStyle,'important');descendants.forEach(el=>{el.style.removeProperty('font-family');el.style.removeProperty('font-style')})}
+        if(sourceId==='provSize'){box.style.setProperty('font-size',size+'pt','important');descendants.forEach(el=>el.style.removeProperty('font-size'))}
+        if(sourceId==='provWeight'){box.style.setProperty('font-weight',weight,'important');box.style.setProperty('font-style',font==='Agency FB'?'italic':fontStyle,'important');descendants.forEach(el=>{el.style.removeProperty('font-weight');el.style.removeProperty('font-style')})}
+        if(sourceId==='provCase'){box.style.setProperty('text-transform',caseMode,'important');descendants.forEach(el=>el.style.removeProperty('text-transform'))}
+      }
       box.style.setProperty('border',borderMode==='hide'?'none':'.25mm solid #000','important');
       box.style.setProperty('width',width?width+'px':'auto','important');box.style.setProperty('min-width',width?width+'px':'25mm','important');box.style.setProperty('height',height?height+'px':'auto','important');
     });
