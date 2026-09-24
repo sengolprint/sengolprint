@@ -452,7 +452,7 @@
       if(record?.document!==currentDocument||!record.gridHtml)return false;
       const grid=ensureProvisionalGrid();grid.innerHTML=record.gridHtml;saveProvisionalGrid();
       provisionalSignature={x:220,y:157,w:50,h:18,src:'',...(record.signature||{})};saveProvisionalSignatureState();prepareProvisionalSignatureBox();
-      if(record.background){localStorage.setItem(documentStorageKey('background'),JSON.stringify(record.background));restoreBackground(documentStorageKey('background'))}else{localStorage.removeItem(documentStorageKey('background'));restoreBackground(documentStorageKey('background'))}
+      if(Object.prototype.hasOwnProperty.call(record,'background')){if(record.background){localStorage.setItem(documentStorageKey('background'),JSON.stringify(record.background));restoreBackground(documentStorageKey('background'))}else if(currentDocument!=='Provisional'){localStorage.removeItem(documentStorageKey('background'));restoreBackground(documentStorageKey('background'))}}
       $('pageOrientation').value=record.orientation||'portrait';localStorage.setItem(certificateOrientationKey(),$('pageOrientation').value);applyPageOrientation($('pageOrientation').value);return true
     }
     if(currentDocument!=='Marksheet'){
