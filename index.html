@@ -453,7 +453,8 @@
   $('editor').querySelector('main').insertBefore(provisionalBoxEditor,$('editor').querySelector('.sheet-wrap'));
   ['provFont','provSize','provWidth','provHeight','provWeight','provCase','provBorder'].forEach(id=>$(id).addEventListener(id==='provFont'||id==='provWeight'||id==='provCase'||id==='provBorder'?'change':'input',updateProvisionalBox));
   document.addEventListener('selectionchange',rememberProvisionalTextSelection);
-  ensureProvisionalGrid().addEventListener('mouseup',rememberProvisionalTextSelection);
+  ensureProvisionalGrid().addEventListener('pointerdown',e=>{if(provisionalDirectMove)return;const box=e.target.closest('[data-provisional-box]');if(box&&box!==activeProvisionalBox())selectProvisionalBox(box)},true);
+  ensureProvisionalGrid().addEventListener('mouseup',()=>setTimeout(rememberProvisionalTextSelection,0));
   ensureProvisionalGrid().addEventListener('keyup',rememberProvisionalTextSelection);
   provisionalBoxEditor.addEventListener('pointerdown',rememberProvisionalTextSelection,true);
   $('provAutoWidth').addEventListener('click',()=>{const boxes=provisionalTargets();if(!boxes.length)return;$('provWidth').value='';boxes.forEach(box=>{box.style.setProperty('width','auto','important');box.style.setProperty('min-width','25mm','important')});saveProvisionalGrid()});
