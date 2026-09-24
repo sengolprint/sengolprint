@@ -671,6 +671,16 @@
   function activeProvisionalBox(){if(!provisionalSelectedId)return null;return [...ensureProvisionalGrid().querySelectorAll('[data-provisional-box]')].find(box=>box.dataset.provisionalBox===provisionalSelectedId)||null}
   function provisionalTargets(){const selected=provisionalSelectedBoxes.filter(box=>box?.isConnected);return provisionalMultiSelect&&selected.length?selected:(activeProvisionalBox()?[activeProvisionalBox()]:[])}
   function refreshProvisionalSelection(){const selected=new Set(provisionalSelectedBoxes);ensureProvisionalGrid().querySelectorAll('[data-provisional-box]').forEach(box=>box.classList.toggle('provisional-selected',selected.has(box)))}
+  function provisionalStyleTarget(cell,target){
+    if(target&&target!==cell&&cell.contains(target)&&target.nodeType===1)return target;
+    const leaves=[...cell.querySelectorAll('*')].filter(el=>el.textContent.trim()&&!el.querySelector('*'));
+    if(leaves.length===1)return leaves[0];
+    if(leaves.length>1){
+      const signature=el=>{const s=getComputedStyle(el);return [s.fontFamily,s.fontSize,s.fontWeight,s.fontStyle,s.textTransform].join('|')};
+      const first=signature(leaves[0]);if(leaves.every(el=>signature(el)===first))return leaves[0];
+    }
+    return cell
+  }
   function selectProvisionalBox(cell,styleTarget=cell){
     if(provisionalSelectedCell!==cell)provisionalSavedRange=null;
     if(provisionalMultiSelect){
@@ -681,7 +691,7 @@
     refreshProvisionalSelection();
     const editor=$('provisionalBoxEditor');if(!editor)return;
     editor.classList.add('active');
-    const cs=getComputedStyle(styleTarget?.nodeType===1?styleTarget:cell),weight=+cs.fontWeight;
+    const cs=getComputedStyle(provisionalStyleTarget(cell,styleTarget)),weight=+cs.fontWeight;
     $('provFont').value=[...$('provFont').options].find(o=>cs.fontFamily.includes(o.value))?.value||'Times New Roman';
     $('provSize').value=Math.round(parseFloat(cs.fontSize)*.75)||12;
     $('provWidth').value=cell.style.width?Math.round(parseFloat(cell.style.width)):'';
