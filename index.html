@@ -435,13 +435,14 @@
       if(!response.ok)await supabaseError(response,'Design library save failed');return true
     }catch(error){console.warn(error.message||'Design library save failed');return false}finally{namedDesignSyncing=false}
   }
+  async function replaceNamedDesignsServer(doc,designs){try{const payload={designLibrary:true,document:doc,version:2,designs,updatedAt:new Date().toISOString()},response=await fetch(SUPABASE_URL+'/rest/v1/rpc/save_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:namedDesignCloudKey(doc),p_data:payload})});if(!response.ok)await supabaseError(response,'Design replace failed');return true}catch(error){console.warn(error.message||'Design replace failed');return false}}
   async function initializeNamedDesigns(doc=currentDocument){
     const localDesigns=readNamedDesignsLocal(doc),server=await loadNamedDesignLibraryServer(doc),serverDesigns=server?.designs&&typeof server.designs==='object'?server.designs:{};
     if(doc==='Marksheet'){const legacyPresets=getDesignPresets();Object.entries(legacyPresets).forEach(([name,design])=>{if(!localDesigns[name]&&design)localDesigns[name]={document:'Marksheet',design,background:font10Background(),savedAt:null}})}
     if(doc!==currentDocument)return;
     namedDesigns={...serverDesigns};
     Object.entries(localDesigns).forEach(([name,record])=>{const server=namedDesigns[name],localTime=Date.parse(record?.savedAt||0)||0,serverTime=Date.parse(server?.savedAt||0)||0;if(!server||localTime>=serverTime)namedDesigns[name]=record});
-    const requiredName=baseDesignName(doc),legacyName=doc==='Marksheet'?'Design 1':'Design 1';
+    const requiredName=baseDesignName(doc),legacyName=doc==='Marksheet'?'Design 1':'Design 1';let exactLibrarySave=false;
     if((doc==='Migration'||doc==='Degree')&&!namedDesigns[requiredName]?.copiedFromProvisional){
       const provisionalLibrary=await loadNamedDesignLibraryServer('Provisional'),provisionalDesigns=provisionalLibrary?.designs||{};
       const source=provisionalDesigns['Pro Design 1']||Object.values(provisionalDesigns).find(record=>record?.document==='Provisional'&&record?.gridHtml);
@@ -452,9 +453,14 @@
       const source=marksheetDesigns['Marks Design 1']||Object.values(marksheetDesigns).find(record=>record?.document==='Marksheet'&&record?.design);
       if(source){const copied=structuredClone(source);copied.document='Consolidated';copied.copiedFromMarksheet=true;copied.savedAt=new Date().toISOString();namedDesigns[requiredName]=copied;localDesigns[requiredName]=copied}
     }
+    if(doc==='Degree'){
+      const design2=namedDesigns['Deg Design 2'];
+      if(design2&&!namedDesigns[requiredName]?.promotedFromDesign2){const previous=namedDesigns[requiredName];if(previous)namedDesigns['Degree Backup Before Design 2 Promotion']={...structuredClone(previous),hiddenBackup:true,savedAt:new Date().toISOString()};namedDesigns[requiredName]={...structuredClone(design2),document:'Degree',promotedFromDesign2:true,protected:true,savedAt:new Date().toISOString()};exactLibrarySave=true}
+      if(namedDesigns[requiredName]?.promotedFromDesign2&&namedDesigns['Deg Design 2']){delete namedDesigns['Deg Design 2'];delete localDesigns['Deg Design 2'];exactLibrarySave=true}
+    }
     if(!namedDesigns[requiredName])namedDesigns[requiredName]=namedDesigns[legacyName]?structuredClone(namedDesigns[legacyName]):captureNamedDesignRecord();
     saveNamedDesignsLocal(doc);
-    if(Object.keys(localDesigns).some(name=>!serverDesigns[name]||namedDesigns[name]!==serverDesigns[name]))await saveNamedDesignsServer(doc);
+    if(exactLibrarySave)await replaceNamedDesignsServer(doc,namedDesigns);else if(Object.keys(localDesigns).some(name=>!serverDesigns[name]||namedDesigns[name]!==serverDesigns[name]))await saveNamedDesignsServer(doc);
     activeNamedDesign=requiredName;namedDesignDraft=false;refreshNamedDesignUI(activeNamedDesign);
     const activeRecord=namedDesigns[activeNamedDesign];if(activeRecord)applyNamedDesignRecord(activeRecord);
     if(doc==='Marksheet'){namedDesignBackups=Array.isArray(server?.backups)?server.backups:[];setNamedDesignStatus('✓ '+Object.keys(namedDesigns).length+' designs safe · '+namedDesignBackups.length+' backups available')}
