@@ -484,8 +484,9 @@
   const provisionalBoxEditor=document.createElement('div');
   provisionalBoxEditor.id='provisionalBoxEditor';provisionalBoxEditor.className='main-title-editor provisional-box-editor no-print';
   provisionalBoxEditor.innerHTML='<label>Font<select id="provFont"><option>Times New Roman</option><option>Arial</option><option>Georgia</option><option>Cambria</option><option>Verdana</option><option value="Calibri">Calibri</option><option value="Monotype Corsiva">Monotype Corsiva Regular</option><option value="Agency FB">Agency FB Italic</option><option value="Brush Script MT">Brush Script MT</option></select></label><label>Size<input id="provSize" type="number" min="6" max="48" value="12"></label><label>Width (px)<input id="provWidth" type="number" min="40" max="1500" placeholder="Auto"></label><button id="provAutoWidth" type="button">Auto Width</button><label>Height<input id="provHeight" type="number" min="0" max="800" placeholder="Auto"></label><label>Style<select id="provWeight"><option value="700">Bold</option><option value="600">Semi Bold</option><option value="400">Normal</option></select></label><label>Case<select id="provCase"><option value="none">As Typed</option><option value="uppercase">UPPERCASE</option><option value="lowercase">lowercase</option><option value="capitalize">Title Case</option></select></label><label>Border<select id="provBorder"><option value="show">Show</option><option value="hide">Hide</option></select></label><button id="provDirectMove" class="provisional-direct-move" type="button">Direct Move: OFF</button><button id="provMultiSelect" class="multi-select-button" type="button">Multi: OFF</button><button id="provAlignRow" class="align-row-button" type="button">Align Row</button><button id="provAlignColumn" class="align-column-button" type="button">Align Column</button><div class="box-move-controls"><button type="button" data-pmove="-1,0">←</button><button type="button" data-pmove="0,-1">↑</button><button type="button" data-pmove="0,1">↓</button><button type="button" data-pmove="1,0">→</button></div>';
+  const provisionalItalicLabel=document.createElement('label');provisionalItalicLabel.innerHTML='Italic<select id="provItalic"><option value="normal">Normal</option><option value="italic">Italic</option></select>';provisionalBoxEditor.insertBefore(provisionalItalicLabel,provisionalBoxEditor.querySelector('#provCase').closest('label'));
   $('editor').querySelector('main').insertBefore(provisionalBoxEditor,$('editor').querySelector('.sheet-wrap'));
-  ['provFont','provSize','provWidth','provHeight','provWeight','provCase','provBorder'].forEach(id=>$(id).addEventListener(id==='provFont'||id==='provWeight'||id==='provCase'||id==='provBorder'?'change':'input',updateProvisionalBox));
+  ['provFont','provSize','provWidth','provHeight','provWeight','provItalic','provCase','provBorder'].forEach(id=>$(id).addEventListener(id==='provFont'||id==='provWeight'||id==='provItalic'||id==='provCase'||id==='provBorder'?'change':'input',updateProvisionalBox));
   document.addEventListener('selectionchange',rememberProvisionalTextSelection);
   ensureProvisionalGrid().addEventListener('pointerdown',e=>{if(provisionalDirectMove)return;const box=e.target.closest('[data-provisional-box]');if(box&&box!==activeProvisionalBox())selectProvisionalBox(box)},true);
   ensureProvisionalGrid().addEventListener('mouseup',()=>setTimeout(rememberProvisionalTextSelection,0));
@@ -687,6 +688,7 @@
     $('provWidth').value=cell.style.width?Math.round(parseFloat(cell.style.width)):'';
     $('provHeight').value=cell.style.height?Math.round(parseFloat(cell.style.height)):'';
     $('provWeight').value=weight>=700?'700':(weight>=500?'600':'400');
+    $('provItalic').value=cs.fontStyle==='italic'?'italic':'normal';
     $('provCase').value=['uppercase','lowercase','capitalize'].includes(cs.textTransform)?cs.textTransform:'none';
     $('provBorder').value=cell.style.border==='none'?'hide':'show';
   }
@@ -725,16 +727,17 @@
   }
   function updateProvisionalBox(event){
     const cell=activeProvisionalBox(),targets=provisionalTargets();if(!cell||!targets.length)return;
-    const font=$('provFont').value,size=Math.max(6,Math.min(48,+$('provSize').value||12)),weight=$('provWeight').value,caseMode=$('provCase').value,borderMode=$('provBorder').value;
+    const font=$('provFont').value,size=Math.max(6,Math.min(48,+$('provSize').value||12)),weight=$('provWeight').value,fontStyle=$('provItalic').value,caseMode=$('provCase').value,borderMode=$('provBorder').value;
     const sourceId=event?.currentTarget?.id||'',selectionStyles={};
     if(sourceId==='provFont'){selectionStyles.fontFamily=font;selectionStyles.fontStyle=font==='Agency FB'?'italic':'normal'}
     if(sourceId==='provSize')selectionStyles.fontSize=size+'pt';
     if(sourceId==='provWeight')selectionStyles.fontWeight=weight;
+    if(sourceId==='provItalic')selectionStyles.fontStyle=fontStyle;
     if(sourceId==='provCase')selectionStyles.textTransform=caseMode;
     const selected=sourceId==='provFont'?applyProvisionalFontSelection(font):(Object.keys(selectionStyles).length&&styleProvisionalSelection(selectionStyles));
     const width=+$('provWidth').value||0,height=+$('provHeight').value||0;
     targets.forEach(box=>{
-      if(!selected){box.style.setProperty('font-family',font,'important');box.style.setProperty('font-style',font==='Agency FB'?'italic':'normal','important');box.style.setProperty('font-size',size+'pt','important');box.style.setProperty('font-weight',weight,'important');box.style.setProperty('text-transform',caseMode,'important')}
+      if(!selected){box.style.setProperty('font-family',font,'important');box.style.setProperty('font-style',font==='Agency FB'?'italic':fontStyle,'important');box.style.setProperty('font-size',size+'pt','important');box.style.setProperty('font-weight',weight,'important');box.style.setProperty('text-transform',caseMode,'important')}
       box.style.setProperty('border',borderMode==='hide'?'none':'.25mm solid #000','important');
       box.style.setProperty('width',width?width+'px':'auto','important');box.style.setProperty('min-width',width?width+'px':'25mm','important');box.style.setProperty('height',height?height+'px':'auto','important');
     });
