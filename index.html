@@ -411,13 +411,14 @@
   function setNamedDesignStatus(message,error=false){const status=$('namedDesignStatus');if(!status)return;status.textContent=message;status.style.color=error?'#b42318':'#087443'}
   function refreshNamedDesignUI(selected=activeNamedDesign){const prefix=designPrefix(),names=Object.keys(namedDesigns).filter(name=>name.startsWith(prefix+' ')),list=$('namedDesignList');if(!list)return;list.innerHTML=names.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('')||'<option value="">No saved design</option>';if(names.includes(selected))list.value=selected;$('namedDesignName').value=selected||baseDesignName();$('namedDesignName').readOnly=true;$('currentDesignLabel').textContent=`Current: ${selected||baseDesignName()} (${namedDesignDraft?'Editing':'Saved'})`}
   function captureNamedDesignRecord(){
-    if(isCertificateDocument())return {document:currentDocument,gridHtml:ensureProvisionalGrid().innerHTML,orientation:$('pageOrientation').value,signature:structuredClone(provisionalSignature),background:bg.getAttribute('src')?backgroundState():null,savedAt:new Date().toISOString()};
+    if(isCertificateDocument())return {document:currentDocument,gridHtml:ensureProvisionalGrid().innerHTML,orientation:$('pageOrientation').value,signature:structuredClone(provisionalSignature),background:bg.getAttribute('src')?backgroundState():null,copiedFromProvisional:currentDocument!=='Provisional',savedAt:new Date().toISOString()};
     if(currentDocument==='Marksheet')return {document:'Marksheet',design:captureCurrentDesign(),background:font10Background(),savedAt:new Date().toISOString()};
     return {document:currentDocument,fields:fields.map(({text,x,y,size,weight})=>({text,x,y,size,weight})),background:backgroundState(),savedAt:new Date().toISOString()}
   }
   async function loadNamedDesignLibraryServer(doc=currentDocument){try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/load_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:namedDesignCloudKey(doc)})});if(!response.ok)return null;const data=await response.json();return data?.designLibrary?data:null}catch{return null}}
   async function saveProvisionalBackgroundSettings(){const state={...backgroundState(),src:'/provisional-background.jpg'},response=await fetch(SUPABASE_URL+'/rest/v1/rpc/save_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:PROVISIONAL_BACKGROUND_SETTINGS_KEY,p_data:{backgroundSettings:true,state,savedAt:new Date().toISOString()}})});if(!response.ok)await supabaseError(response,'Provisional background settings save failed');return true}
   async function loadProvisionalBackgroundSettings(){try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/load_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:PROVISIONAL_BACKGROUND_SETTINGS_KEY})});if(!response.ok)return;const data=await response.json();if(currentDocument!=='Provisional'||!data?.backgroundSettings||!data.state)return;localStorage.setItem(documentStorageKey('background','Provisional'),JSON.stringify(data.state));restoreBackground(documentStorageKey('background','Provisional'))}catch(error){console.warn(error.message||'Provisional background settings load failed')}}
+  async function readProvisionalBackgroundSettings(){try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/load_marksheet',{method:'POST',headers:cloudHeaders(),body:JSON.stringify({p_key:PROVISIONAL_BACKGROUND_SETTINGS_KEY})});if(!response.ok)return null;const data=await response.json();return data?.backgroundSettings&&data.state?data.state:null}catch{return null}}
   async function saveNamedDesignsServer(doc=currentDocument){
     if(namedDesignSyncing)return false;namedDesignSyncing=true;
     try{
@@ -438,6 +439,11 @@
     namedDesigns={...serverDesigns};
     Object.entries(localDesigns).forEach(([name,record])=>{const server=namedDesigns[name],localTime=Date.parse(record?.savedAt||0)||0,serverTime=Date.parse(server?.savedAt||0)||0;if(!server||localTime>=serverTime)namedDesigns[name]=record});
     const requiredName=baseDesignName(doc),legacyName=doc==='Marksheet'?'Design 1':'Design 1';
+    if((doc==='Migration'||doc==='Degree')&&!namedDesigns[requiredName]?.copiedFromProvisional){
+      const provisionalLibrary=await loadNamedDesignLibraryServer('Provisional'),provisionalDesigns=provisionalLibrary?.designs||{};
+      const source=provisionalDesigns['Pro Design 1']||Object.values(provisionalDesigns).find(record=>record?.document==='Provisional'&&record?.gridHtml);
+      if(source){const copied=structuredClone(source);copied.document=doc;copied.copiedFromProvisional=true;copied.savedAt=new Date().toISOString();if(!copied.background)copied.background=await readProvisionalBackgroundSettings();namedDesigns[requiredName]=copied}
+    }
     if(!namedDesigns[requiredName])namedDesigns[requiredName]=namedDesigns[legacyName]?structuredClone(namedDesigns[legacyName]):captureNamedDesignRecord();
     saveNamedDesignsLocal(doc);
     if(Object.keys(localDesigns).some(name=>!serverDesigns[name]||namedDesigns[name]!==serverDesigns[name]))await saveNamedDesignsServer(doc);
