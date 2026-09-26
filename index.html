@@ -428,7 +428,7 @@
     try{
       const previous=await loadNamedDesignLibraryServer(doc),serverDesigns=previous?.designs&&typeof previous.designs==='object'?previous.designs:{};
       const merged={...serverDesigns,...namedDesigns};
-      const backups=doc==='Marksheet'?(Array.isArray(previous?.backups)?previous.backups.slice(-19):[]):[];
+      const backups=[];
       if(doc==='Marksheet'&&Object.keys(serverDesigns).length)backups.push({savedAt:previous.updatedAt||new Date().toISOString(),designs:structuredClone(serverDesigns)});
       namedDesigns=merged;if(doc==='Marksheet')namedDesignBackups=backups;saveNamedDesignsLocal(doc);refreshNamedDesignUI(activeNamedDesign);
       const payload={designLibrary:true,document:doc,version:2,designs:merged,updatedAt:new Date().toISOString()};if(doc==='Marksheet')payload.backups=backups;
