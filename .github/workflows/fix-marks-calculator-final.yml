@@ -1,6 +1,5 @@
-name: Fix Marks Calculator layout final
+name: Fix Marks Calculator Final
 on:
-  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/fix-marks-calculator-final.yml'
@@ -11,35 +10,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply full width calculator layout
+      - name: Apply calculator width fix
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          css='''
-<style id="marks-calculator-final-layout">
-body:has(#marksCalculator:not(.hidden)) #dashboard{display:none!important}
-#marksCalculator:not(.hidden){display:block!important;width:100vw!important;max-width:none!important;min-height:100vh!important;overflow-x:auto!important;background:#f3f6fb!important}
-#marksCalculator .dash-content{display:block!important;width:100%!important;max-width:none!important;min-width:1100px!important;margin:0!important;padding:24px 32px!important}
-#marksCalculator .dash-content>div{display:block!important;width:calc(100vw - 64px)!important;max-width:1400px!important;min-width:1000px!important;margin:18px auto!important}
-#marksCalculator #mcSummary{width:100%!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:12px!important}
-#marksCalculator #mcTable{width:100%!important;min-width:1000px!important;border-collapse:collapse!important;table-layout:auto!important}
-#marksCalculator #mcTable th,#marksCalculator #mcTable td{white-space:nowrap!important;text-align:center!important;padding:9px 8px!important}
-#marksCalculator #mcTable th:first-child,#marksCalculator #mcTable td:first-child{text-align:left!important;min-width:240px!important}
-#marksCalculator #mcTable td:first-child input{width:220px!important}
-</style>
-'''
-          if 'marks-calculator-final-layout' not in s:
-              if '</head>' not in s: raise SystemExit('head closing tag missing')
-              s=s.replace('</head>',css+'</head>',1)
-          p.write_text(s,encoding='utf-8')
+          marker='mc-force-full-width-20260926'
+          css='''<style id="mc-force-full-width-20260926">
+#marksCalculator:not(.hidden){display:block!important;position:fixed!important;inset:0!important;z-index:9999!important;width:100vw!important;height:100vh!important;overflow:auto!important;background:#f3f6fb!important}
+#marksCalculator .dash-content{width:100%!important;max-width:none!important;min-width:1050px!important;margin:0!important;padding:24px 32px!important}
+#marksCalculator .dash-content>div{width:calc(100vw - 64px)!important;max-width:1400px!important;min-width:1000px!important;margin:18px auto!important}
+#marksCalculator #mcSummary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%!important}
+#marksCalculator #mcTable{width:100%!important;min-width:1000px!important;table-layout:auto!important}
+#marksCalculator #mcTable th,#marksCalculator #mcTable td{padding:9px 8px!important;white-space:nowrap!important;text-align:center!important}
+#marksCalculator #mcTable th:first-child,#marksCalculator #mcTable td:first-child{text-align:left!important;min-width:230px!important}
+</style>'''
+          if marker not in s:
+              s=s.replace('</head>',css+'\n</head>',1)
+              p.write_text(s,encoding='utf-8')
           PY
-      - name: Commit direct index change
+      - name: Commit index.html
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Fix Marks Calculator full width display'
-          git push origin HEAD:main
+          git diff --cached --quiet && exit 0
+          git commit -m "Force Marks Calculator full width"
+          git push
