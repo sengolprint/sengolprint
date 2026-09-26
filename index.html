@@ -130,7 +130,7 @@
           <button class="side-link" data-doc="Consolidated"><span class="side-icon">C</span><span>Consolidated</span></button>
         </div>
       </details>
-      <button class="side-link" type="button"><span class="side-icon">∑</span><span>Marks Calculator</span></button>
+      <button id="openMarksCalculator" class="side-link" type="button"><span class="side-icon">∑</span><span>Marks Calculator</span></button>
     </nav>
     <div class="side-footer">A4 Print Studio<br>Black text alignment tool</div>
   </aside>
@@ -150,6 +150,8 @@
     </section>
   </div>
 </section>
+
+<section id="marksCalculator" class="dashboard hidden"><div class="dash-content" style="margin-left:0;padding:24px"><button id="marksCalcBack" class="back-btn">← Dashboard</button><div style="max-width:1100px;margin:18px auto;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;box-shadow:0 10px 30px #0f172a12"><h2 style="margin:0">🏅 Results</h2><p style="color:#94a3b8;margin:4px 0 20px">Marks Calculator · Semester Result</p><div id="mcSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px"></div><div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #eef2f7;padding-top:14px"><b style="font-size:.78rem;color:#94a3b8;letter-spacing:.08em">PAPER-WISE MARKS</b><label style="font-size:.75rem;color:#64748b">Auto-fill at <input id="mcAuto" type="number" min="0" max="100" value="65" style="width:58px;padding:7px;border:1px solid #dbe2ea;border-radius:8px"> %</label></div><div style="overflow:auto;margin-top:10px"><table id="mcTable" style="width:100%;border-collapse:collapse;min-width:820px;font-size:.78rem"><thead><tr style="background:#f8fafc"><th rowspan="2" style="text-align:left;padding:10px">SUBJECT</th><th rowspan="2">CREDIT</th><th colspan="3">MAXIMUM</th><th colspan="3">OBTAINED</th><th rowspan="2">%</th></tr><tr style="background:#f8fafc"><th>EXTERNAL</th><th>INTERNAL</th><th>TOTAL</th><th>EXTERNAL</th><th>INTERNAL</th><th>TOTAL</th></tr></thead><tbody></tbody></table></div><div style="margin-top:12px"><button id="mcAddRow" type="button">+ Add Subject</button></div></div></div></section>
 
 <div id="editor" class="app hidden">
   <button id="showControls" class="show-controls no-print">☰ Show controls</button>
@@ -855,6 +857,10 @@
   $('showControls').addEventListener('click',()=>{$('editor').classList.remove('controls-hidden');localStorage.setItem('editor-controls-hidden','0')});
   if(localStorage.getItem('sidebar-collapsed')==='1')$('dashboard').classList.add('sidebar-collapsed');if(localStorage.getItem('editor-controls-hidden')==='1')$('editor').classList.add('controls-hidden');
   try{JSON.parse(localStorage.getItem('marksheet-layout-v1')||'[]').forEach(makeField)}catch{} restoreBackground();updateCount();refreshDashboard();localStorage.removeItem('active-document-v1');
+</script>
+
+<script>
+(()=>{const q=id=>document.getElementById(id),calc=q('marksCalculator');if(!calc)return;const body=q('mcTable').querySelector('tbody');function row(){const tr=document.createElement('tr');tr.style.borderTop='1px solid #eef2f7';tr.innerHTML='<td style="padding:8px"><input placeholder="Subject name" style="width:220px;padding:7px"></td><td><input type="number" value="4" min="0" style="width:55px"></td><td><input class="mxE" type="number" value="70" style="width:55px"></td><td><input class="mxI" type="number" value="30" style="width:55px"></td><td class="mxT">100</td><td><input class="obE" type="number" value="0" style="width:55px"></td><td><input class="obI" type="number" value="0" style="width:55px"></td><td class="obT">0</td><td class="pct">0%</td>';body.appendChild(tr);tr.querySelectorAll('input').forEach(x=>x.addEventListener('input',update));update()}function update(){let got=0,max=0;[...body.rows].forEach(r=>{let me=+r.querySelector('.mxE').value||0,mi=+r.querySelector('.mxI').value||0,oe=+r.querySelector('.obE').value||0,oi=+r.querySelector('.obI').value||0,mt=me+mi,ot=oe+oi;r.querySelector('.mxT').textContent=mt;r.querySelector('.obT').textContent=ot;r.querySelector('.pct').textContent=(mt?ot/mt*100:0).toFixed(1)+'%';got+=ot;max+=mt});let pc=max?got/max*100:0;q('mcSummary').innerHTML=`<div style="padding:12px;border:1px solid #dbe2ea;border-radius:12px"><small>Status</small><b style="display:block;color:${pc>=40?'#00875a':'#c62828'}">${pc>=40?'Pass':'Fail'}</b></div><div style="padding:12px;border:1px solid #dbe2ea;border-radius:12px"><small>Obtained</small><b style="display:block">${got}</b></div><div style="padding:12px;border:1px solid #dbe2ea;border-radius:12px"><small>Total &nbsp; ${pc.toFixed(1)}%</small><b style="display:block">${max}</b></div>`}q('mcAddRow').onclick=row;q('mcAuto').onchange=()=>{let p=Math.max(0,Math.min(100,+q('mcAuto').value||0))/100;[...body.rows].forEach(r=>{r.querySelector('.obE').value=Math.round((+r.querySelector('.mxE').value||0)*p);r.querySelector('.obI').value=Math.round((+r.querySelector('.mxI').value||0)*p)});update()};q('openMarksCalculator').onclick=()=>{q('dashboard').classList.add('hidden');calc.classList.remove('hidden');if(!body.rows.length)for(let i=0;i<6;i++)row()};q('marksCalcBack').onclick=()=>{calc.classList.add('hidden');q('dashboard').classList.remove('hidden')};})();
 </script>
 </body>
 </html>
