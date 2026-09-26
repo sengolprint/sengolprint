@@ -1,0 +1,36 @@
+name: Optimize marksheet load
+
+on:
+  push:
+    paths:
+      - '.github/workflows/optimize-marksheet-load.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Defer heavy marksheet media rendering
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="""const img=box.querySelector('img');img.src=state.src||'';box.classList.toggle('has-image',!!state.src);box.querySelector('.media-width').value=state.w;box.querySelector('.media-height').value=state.h"""
+          new="""const img=box.querySelector('img'),src=state.src||'';box.classList.toggle('has-image',!!src);box.querySelector('.media-width').value=state.w;box.querySelector('.media-height').value=state.h;if(img.dataset.pendingSrc!==src){img.dataset.pendingSrc=src;if(!src){img.removeAttribute('src')}else{const load=()=>{if(img.dataset.pendingSrc===src&&img.src!==src)img.src=src};if(typeof requestIdleCallback==='function')requestIdleCallback(load,{timeout:250});else setTimeout(load,0)}}"""
+          if old not in s:
+              raise SystemExit('applyMediaBox target not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit optimization
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Speed up marksheet design loading"
+          git push
