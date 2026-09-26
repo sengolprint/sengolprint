@@ -1,0 +1,36 @@
+name: Fix Marksheet image save v2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-marksheet-image-save-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reduce Marksheet design save payload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="const backups=doc==='Marksheet'?(Array.isArray(previous?.backups)?previous.backups.slice(-19):[]):[];"
+          new="const backups=[];"
+          if old not in s:
+              raise SystemExit('Marksheet backup payload target not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix Marksheet save failure after image replacement"
+          git push
