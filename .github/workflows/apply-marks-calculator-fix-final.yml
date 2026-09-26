@@ -1,0 +1,51 @@
+name: Apply Marks Calculator fix final
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-marks-calculator-fix-final.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Insert full width calculator CSS
+        shell: bash
+        run: |
+          cat > /tmp/mc.css <<'EOF'
+          <style id="mc-final-width-fix">
+          #marksCalculator{display:block!important;width:100vw!important;max-width:none!important;min-height:100vh!important;background:#f3f6fb!important;overflow-x:auto!important}
+          #marksCalculator.hidden{display:none!important}
+          #marksCalculator .dash-content{display:block!important;width:100%!important;max-width:none!important;min-width:1000px!important;padding:24px 32px!important;margin:0!important}
+          #marksCalculator .dash-content>div{display:block!important;width:calc(100% - 64px)!important;max-width:1200px!important;min-width:950px!important;margin:18px auto!important}
+          #marksCalculator #mcSummary{width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+          #marksCalculator #mcTable{width:100%!important;min-width:950px!important;table-layout:auto!important}
+          #marksCalculator #mcTable th,#marksCalculator #mcTable td{white-space:nowrap!important;padding:9px 8px!important;text-align:center!important}
+          #marksCalculator #mcTable th:first-child,#marksCalculator #mcTable td:first-child{text-align:left!important;min-width:240px!important}
+          </style>
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          css=Path('/tmp/mc.css').read_text(encoding='utf-8')
+          if 'mc-final-width-fix' not in s:
+              if '</head>' not in s:
+                  raise SystemExit('head closing tag missing')
+              s=s.replace('</head>',css+'\n</head>',1)
+              p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify change
+        run: grep -q 'mc-final-width-fix' index.html
+      - name: Commit actual index change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No change needed'
+            exit 0
+          fi
+          git commit -m "Fix Marks Calculator full width display"
+          git push
