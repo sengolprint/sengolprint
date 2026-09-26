@@ -1,0 +1,40 @@
+name: Calculator layout fix v2
+on:
+  push:
+    paths:
+      - .github/workflows/fix-calculator-layout-v2.yml
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          css='''<style id="mc-layout-v2">
+#marksCalculator{display:block;min-height:100vh;width:100%;background:#f3f6fb;overflow:auto}
+#marksCalculator.hidden{display:none!important}
+#marksCalculator .dash-content{width:100%;max-width:none;min-width:0;padding:24px 32px!important}
+#marksCalculator .dash-content>div{width:100%!important;max-width:1180px!important;min-width:900px;margin:18px auto!important}
+#marksCalculator #mcSummary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#marksCalculator #mcTable{width:100%!important;min-width:900px!important;table-layout:auto}
+#marksCalculator #mcTable th,#marksCalculator #mcTable td{padding:9px 8px;text-align:center;white-space:nowrap}
+#marksCalculator #mcTable th:first-child,#marksCalculator #mcTable td:first-child{text-align:left;min-width:235px}
+#marksCalculator #mcTable input{box-sizing:border-box}
+@media(max-width:950px){#marksCalculator .dash-content{padding:14px!important}#marksCalculator .dash-content>div{margin:10px 0!important}}
+</style>'''
+          if 'mc-layout-v2' not in s:
+              s=s.replace('</head>',css+'\n</head>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - run: |
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix Marks Calculator full width layout"
+          git push
