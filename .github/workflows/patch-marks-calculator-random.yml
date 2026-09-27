@@ -1,0 +1,66 @@
+name: Patch marks calculator random fill
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-marks-calculator-random.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch app-source calculator
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app-source.html')
+          s=p.read_text(encoding='utf-8')
+          old_label='<label style="font-size:.75rem;color:#64748b">Auto-fill at <input id="mcAuto" type="number" min="0" max="100" value="65" style="width:58px;padding:7px;border:1px solid #dbe2ea;border-radius:8px"> %</label>'
+          new_label='<div style="display:flex;align-items:center;gap:7px;font-size:.75rem;color:#64748b">Target <input id="mcAuto" type="number" min="40" max="100" value="65" style="width:62px;height:32px;padding:4px 6px;text-align:center;border:1px solid #dbe2ea;border-radius:8px"> % <button id="mcFillMarks" type="button" style="height:32px;padding:4px 12px;border:0;border-radius:8px;background:#176b50;color:#fff;font-weight:800;cursor:pointer">Fill Marks</button></div>'
+          if old_label in s:
+              s=s.replace(old_label,new_label,1)
+          old="q('mcAddRow').onclick=row;q('mcAuto').onchange=()=>{let p=Math.max(0,Math.min(100,+q('mcAuto').value||0))/100;[...body.rows].forEach(r=>{r.querySelector('.obE').value=Math.round((+r.querySelector('.mxE').value||0)*p);r.querySelector('.obI').value=Math.round((+r.querySelector('.mxI').value||0)*p)});update()};q('openMarksCalculator').onclick="
+          new="""q('mcAddRow').onclick=row;
+          let mcFillSerial=0;
+          function mcClamp(v,min,max){return Math.max(min,Math.min(max,v))}
+          function mcRand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+          function mcFillRandom(){
+            const target=mcClamp(+q('mcAuto').value||40,40,100);q('mcAuto').value=target;mcFillSerial++;
+            const used=new Set();
+            [...body.rows].forEach((r,i)=>{
+              const me=Math.max(0,+r.querySelector('.mxE').value||0),mi=Math.max(0,+r.querySelector('.mxI').value||0);
+              const minE=Math.ceil(me*.40),minI=Math.ceil(mi*.40),current=(+r.querySelector('.obE').value||0)+'|'+(+r.querySelector('.obI').value||0);
+              let oe=minE,oi=minI,key=oe+'|'+oi;
+              for(let tries=0;tries<120;tries++){
+                const rowTarget=mcClamp(target+mcRand(-6,6),40,100);
+                const desired=mcClamp(Math.round((me+mi)*rowTarget/100),minE+minI,me+mi);
+                const lowE=Math.max(minE,desired-mi),highE=Math.min(me,desired-minI);
+                if(lowE>highE)continue;
+                oe=mcRand(lowE,highE);oi=desired-oe;key=oe+'|'+oi;
+                if(!used.has(key)&&key!==current)break;
+              }
+              if(used.has(key)||key===current){
+                outer:for(let e=minE;e<=me;e++)for(let n=minI;n<=mi;n++){const k=e+'|'+n;if(!used.has(k)&&k!==current){oe=e;oi=n;key=k;break outer}}
+              }
+              used.add(key);r.querySelector('.obE').value=oe;r.querySelector('.obI').value=oi;
+            });
+            update();
+          }
+          q('mcAuto').onchange=()=>{};
+          if(q('mcFillMarks'))q('mcFillMarks').onclick=mcFillRandom;
+          q('mcAuto').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();mcFillRandom()}};
+          q('openMarksCalculator').onclick="""
+          if old not in s:
+              raise SystemExit('calculator handler marker not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit patched calculator
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app-source.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Patch marks calculator random fill directly in app source'
+          git push
