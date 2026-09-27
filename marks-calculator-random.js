@@ -1,4 +1,4 @@
-// Marks Calculator: varied auto-fill, unique subject totals, and exact overall percentage fill.
+// Marks Calculator: varied subject marks with exact overall target percentage.
 (function () {
   function q(id) { return document.getElementById(id); }
   var table = q('mcTable');
@@ -22,7 +22,7 @@
     auto.insertAdjacentElement('afterend', fillButton);
   }
 
-  // Second button: keeps the entered percentage exact at the overall-result level.
+  // Keep a second explicit exact button if the UI can show it.
   var exactButton = q('mcExactMarks');
   if (!exactButton) {
     exactButton = document.createElement('button');
@@ -74,7 +74,7 @@
     var highE = Math.min(lim.maxE, desired - lim.minI);
     if (lowE > highE) return null;
 
-    for (var attempt = 0; attempt < 80; attempt++) {
+    for (var attempt = 0; attempt < 100; attempt++) {
       var ext = rand(lowE, highE);
       var intl = desired - ext;
       var key = ext + '|' + intl;
@@ -123,25 +123,7 @@
     recalculate();
   }
 
-  // Random-looking fill: subject totals are kept different whenever mathematically possible.
-  function fillMarks() {
-    var target = clamp(Number(auto.value) || 40, 40, 100);
-    auto.value = target;
-    press++;
-    var rows = Array.prototype.slice.call(tbody.rows);
-    var usedTotals = new Set();
-    var totals = rows.map(function (row, index) {
-      var lim = rowLimits(row);
-      var previousTotal = (Number(row.querySelector('.obE')?.value) || 0) + (Number(row.querySelector('.obI')?.value) || 0);
-      var total = chooseVariedTotal(lim, target, usedTotals, previousTotal, index);
-      usedTotals.add(total);
-      return total;
-    });
-    applyTotals(rows, totals);
-  }
-
-  // Exact fill: overall obtained marks are exactly the entered target percentage whenever integer marks permit it.
-  // It still spreads marks across subjects so their TOTAL values do not repeat whenever possible.
+  // Exact overall target with varied subject totals.
   function fillExact() {
     var target = clamp(Number(auto.value) || 40, 40, 100);
     auto.value = target;
@@ -152,25 +134,27 @@
     var limits = rows.map(rowLimits);
     var grandMax = limits.reduce(function (s, x) { return s + x.maxTotal; }, 0);
     var grandMin = limits.reduce(function (s, x) { return s + x.minTotal; }, 0);
+
+    // Integer marks can only represent percentages in steps of 100 / grandMax.
+    // Use the nearest integer grand total, which gives the exact requested one-decimal result whenever possible.
     var targetObtained = clamp(Math.round(grandMax * target / 100), grandMin, grandMax);
 
-    // Start with deliberately different totals around target.
     var totals = [], usedTotals = new Set();
     rows.forEach(function (row, index) {
       var lim = limits[index];
       var previousTotal = (Number(row.querySelector('.obE')?.value) || 0) + (Number(row.querySelector('.obI')?.value) || 0);
       var total = chooseVariedTotal(lim, target, usedTotals, previousTotal, index);
-      totals.push(total); usedTotals.add(total);
+      totals.push(total);
+      usedTotals.add(total);
     });
 
-    // Adjust one mark at a time until the grand total is exact; prefer moves that preserve unique totals.
     var current = totals.reduce(function (a, b) { return a + b; }, 0);
     var guard = 0;
     while (current !== targetObtained && guard++ < 10000) {
       var direction = current < targetObtained ? 1 : -1;
       var changed = false;
 
-      // First pass: keep totals unique.
+      // Prefer adjustments that keep all subject totals different.
       for (var k = 0; k < rows.length; k++) {
         var idx = (k + press + guard) % rows.length;
         var next = totals[idx] + direction;
@@ -184,7 +168,7 @@
       }
       if (changed) continue;
 
-      // Second pass: exact percentage has priority if uniqueness is impossible at the boundary.
+      // Exact grand percentage has priority if uniqueness is impossible.
       for (var j = 0; j < rows.length; j++) {
         var next2 = totals[j] + direction;
         if (next2 < limits[j].minTotal || next2 > limits[j].maxTotal) continue;
@@ -199,10 +183,11 @@
     applyTotals(rows, totals);
   }
 
+  // Both buttons now honor the entered target exactly at overall level.
   fillButton.onclick = function (event) {
     event.preventDefault();
     event.stopPropagation();
-    fillMarks();
+    fillExact();
   };
   exactButton.onclick = function (event) {
     event.preventDefault();
