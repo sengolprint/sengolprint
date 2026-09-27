@@ -9,7 +9,7 @@
 <body>
 <script>
 (async()=>{
-  const response=await fetch('/app-source.html?v=20260928-cap73-v11',{cache:'no-store'});
+  const response=await fetch('/app-source.html?v=20260928-student-v12',{cache:'no-store'});
   if(!response.ok)throw new Error('App source load failed: '+response.status);
   let html=await response.text();
 
@@ -51,8 +51,11 @@
     function fill(){const target=clamp(+auto.value||40,40,100);auto.value=target;serial++;const rows=[...body.rows];if(!rows.length)return;const ls=rows.map(lim),grandMax=ls.reduce((s,x)=>s+x.maxT,0),grandMin=ls.reduce((s,x)=>s+x.minT,0);let wanted=clamp(Math.round(grandMax*target/100),grandMin,grandMax);wanted=Math.min(wanted,ls.reduce((s,x)=>s+cap(x,target),0));const prev=rows.map(r=>(+r.querySelector('.obE').value||0)+(+r.querySelector('.obI').value||0));const cand=ls.map((l,i)=>{const ideal=l.maxT*target/100,a=[];for(let v=l.minT;v<=cap(l,target);v++)a.push(v);a.sort((x,y)=>(Math.abs(x-ideal)+(x===prev[i]?2:0)+((x+serial+i)%11)/100)-(Math.abs(y-ideal)+(y===prev[i]?2:0)+((y+serial+i)%11)/100));return a});const result=new Array(rows.length),used=new Set();let nodes=0;function dfs(pos,sum){if(++nodes>500000)return false;if(pos===rows.length)return sum===wanted;let mn=0,mx=0;for(let j=pos;j<rows.length;j++){let lo=null,hi=null;for(const v of cand[j])if(!used.has(v)){if(lo===null||v<lo)lo=v;if(hi===null||v>hi)hi=v}if(lo===null)return false;mn+=lo;mx+=hi}if(sum+mn>wanted||sum+mx<wanted)return false;for(const v of cand[pos]){if(used.has(v)||sum+v>wanted)continue;used.add(v);result[pos]=v;if(dfs(pos+1,sum+v))return true;used.delete(v)}return false}if(!dfs(0,0)){let cur=0;for(let i=0;i<rows.length;i++){result[i]=clamp(Math.round(ls[i].maxT*target/100),ls[i].minT,cap(ls[i],target));cur+=result[i]}let guard=0;while(cur!==wanted&&guard++<10000){const d=cur<wanted?1:-1;let ch=false;for(let i=0;i<result.length;i++){const n=result[i]+d;if(n<ls[i].minT||n>cap(ls[i],target))continue;result[i]=n;cur+=d;ch=true;if(cur===wanted)break}if(!ch)break}}
       const usedPairs=new Set();rows.forEach((r,i)=>{const l=ls[i],t=result[i],low=Math.max(l.minE,t-l.mi),high=Math.min(l.me,t-l.minI),opts=[];for(let e=low;e<=high;e++)opts.push(e);opts.sort(()=>Math.random()-.5);let ext=opts[0]??low;for(const e of opts){const k=e+'|'+(t-e);if(!usedPairs.has(k)){ext=e;break}}const intl=t-ext;usedPairs.add(ext+'|'+intl);r.querySelector('.obE').value=ext;r.querySelector('.obI').value=intl});refresh()}
     btn.onclick=e=>{e.preventDefault();e.stopPropagation();fill()};auto.onchange=null;auto.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();fill()}};
-  })();<\/script>`;
-  html=html.replace('</body>',override+'<script src="/student-gradepoint-auto.js?v=20260928-v1"><\\/script><script src="/student-semester-summary.js?v=20260928-v1"><\\/script></body>');
+  })();</`+`script>`;
+
+  const helpers = '<script src="/student-gradepoint-auto.js?v=20260928-v2"></'+'script>' +
+                  '<script src="/student-semester-summary.js?v=20260928-v2"></'+'script>';
+  html=html.replace('</body>',override+helpers+'</body>');
   document.open();document.write(html);document.close();
 })().catch(error=>{console.error(error);document.body.innerHTML='<div class="boot-error"><h2>Page load issue</h2><p>Please refresh the page.</p></div>'});
 </script>
