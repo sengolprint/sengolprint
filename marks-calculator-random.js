@@ -42,10 +42,16 @@
     if (summary) summary.innerHTML = '<div style="padding:12px;border:1px solid #dbe2ea;border-radius:12px"><small>Status</small><b style="display:block;color:' + (pc >= 40 ? '#00875a' : '#c62828') + '">' + (pc >= 40 ? 'Pass' : 'Fail') + '</b></div><div style="padding:12px;border:1px solid #dbe2ea;border-radius:12px"><small>Obtained</small><b style="display:block">' + got + '</b></div><div style="padding:12px;border:1px solid #dbe2ea;border-radius:12px"><small>Total &nbsp; ' + pc.toFixed(1) + '%</small><b style="display:block">' + maximum + '</b></div>';
   }
 
+  function fillMaxTotal(l, target) {
+    // For overall targets from 63% through 70%, no individual paper may exceed 73 obtained marks.
+    return (target >= 63 && target <= 70) ? Math.min(l.maxTotal, 73) : l.maxTotal;
+  }
+
   function shuffledCandidates(l, target, rowIndex, previousTotal) {
+    var cap = fillMaxTotal(l, target);
     var ideal = l.maxTotal * target / 100;
     var values = [];
-    for (var v = l.minTotal; v <= l.maxTotal; v++) values.push(v);
+    for (var v = l.minTotal; v <= cap; v++) values.push(v);
     values.sort(function(a,b) {
       var da = Math.abs(a - ideal), db = Math.abs(b - ideal);
       if (a === previousTotal) da += 1.5;
@@ -56,17 +62,16 @@
     return values;
   }
 
-  // Finds DIFFERENT subject totals whose sum is the exact required grand obtained marks.
   function findUniqueTotals(ls, wanted, target, previousTotals) {
     var n = ls.length, result = new Array(n), used = new Set(), nodes = 0;
     var order = Array.from({length:n}, function(_,i){ return i; });
-    order.sort(function(a,b){ return (ls[a].maxTotal-ls[a].minTotal) - (ls[b].maxTotal-ls[b].minTotal); });
+    order.sort(function(a,b){ return (fillMaxTotal(ls[a],target)-ls[a].minTotal) - (fillMaxTotal(ls[b],target)-ls[b].minTotal); });
     var cand = ls.map(function(l,i){ return shuffledCandidates(l,target,i,previousTotals[i]); });
     var suffixMin = new Array(n+1).fill(0), suffixMax = new Array(n+1).fill(0);
     for (var p=n-1; p>=0; p--) {
       var idx=order[p];
       suffixMin[p]=suffixMin[p+1]+ls[idx].minTotal;
-      suffixMax[p]=suffixMax[p+1]+ls[idx].maxTotal;
+      suffixMax[p]=suffixMax[p+1]+fillMaxTotal(ls[idx],target);
     }
     function dfs(pos,sum){
       if (++nodes > 500000) return false;
@@ -87,13 +92,13 @@
   }
 
   function exactFallback(ls, wanted, target) {
-    var totals = ls.map(function(l){ return clamp(Math.round(l.maxTotal * target / 100), l.minTotal, l.maxTotal); });
+    var totals = ls.map(function(l){ return clamp(Math.round(l.maxTotal * target / 100), l.minTotal, fillMaxTotal(l,target)); });
     var sum = totals.reduce(function(a,b){return a+b;},0), guard=0;
     while (sum !== wanted && guard++ < 20000) {
       var dir = sum < wanted ? 1 : -1, changed=false;
       for (var i=0;i<totals.length;i++) {
-        var next=totals[i]+dir;
-        if (next<ls[i].minTotal || next>ls[i].maxTotal) continue;
+        var next=totals[i]+dir, cap=fillMaxTotal(ls[i],target);
+        if (next<ls[i].minTotal || next>cap) continue;
         totals[i]=next; sum+=dir; changed=true;
         if (sum===wanted) break;
       }
@@ -125,6 +130,8 @@
     var grandMax = ls.reduce(function(s,l){ return s+l.maxTotal; },0);
     var grandMin = ls.reduce(function(s,l){ return s+l.minTotal; },0);
     var wanted = clamp(Math.round(grandMax * target / 100), grandMin, grandMax);
+    var cappedGrandMax = ls.reduce(function(s,l){ return s+fillMaxTotal(l,target); },0);
+    wanted = Math.min(wanted, cappedGrandMax);
     var previousTotals = rows.map(function(row){ return (Number(row.querySelector('.obE')?.value)||0)+(Number(row.querySelector('.obI')?.value)||0); });
     var totals = findUniqueTotals(ls,wanted,target,previousTotals) || exactFallback(ls,wanted,target);
     var usedPairs = new Set();
