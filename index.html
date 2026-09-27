@@ -9,11 +9,11 @@
 <body>
 <script>
 (async()=>{
-  const response=await fetch('/app-source.html?v=20260928-autofill-v9',{cache:'no-store'});
+  const response=await fetch('/app-source.html?v=20260928-autofill-v10',{cache:'no-store'});
   if(!response.ok)throw new Error('App source load failed: '+response.status);
   let html=await response.text();
 
-  const alignmentFix=`<style id="mc-alignment-v9">
+  const alignmentFix=`<style id="mc-alignment-v10">
 #marksCalculator{display:block!important;width:100%!important;max-width:none!important;min-height:100vh!important;background:#f3f6fb!important;overflow-x:auto!important}
 #marksCalculator.hidden{display:none!important}
 #marksCalculator .dash-content{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;padding:20px 28px!important;margin:0!important}
@@ -44,12 +44,31 @@
   const tableWithColumns='<table id="mcTable" style="width:100%;border-collapse:collapse;min-width:820px;font-size:.78rem"><colgroup><col class="mc-subject"><col class="mc-credit"><col class="mc-mark"><col class="mc-mark"><col class="mc-total"><col class="mc-mark"><col class="mc-mark"><col class="mc-total"><col class="mc-percent"></colgroup><thead>';
   html=html.replace(tableStart,tableWithColumns);
 
-  const oldAuto='<label style="font-size:.75rem;color:#64748b">Auto-fill at <input id="mcAuto" type="number" min="0" max="100" value="65" style="width:58px;padding:7px;border:1px solid #dbe2ea;border-radius:8px"> %</label>';
+  const legacyAuto='<div style="display:flex;align-items:center;gap:7px;font-size:.75rem;color:#64748b">Target <input id="mcAuto" type="number" min="40" max="100" value="65" style="width:62px;height:32px;padding:4px 6px;text-align:center;border:1px solid #dbe2ea;border-radius:8px"> % <button id="mcFillMarks" type="button" style="height:32px;padding:4px 12px;border:0;border-radius:8px;background:#176b50;color:#fff;font-weight:800;cursor:pointer">Fill Marks</button></div>';
   const newAuto='<div class="mc-auto-tools">Auto-fill at <input id="mcAuto" type="number" min="40" max="100" step="0.1" value="65"> % <button id="mcFillMarks" type="button">Fill</button></div>';
-  html=html.replace(oldAuto,newAuto);
+  html=html.replace(legacyAuto,newAuto);
+
+  const exactLogic=`function mcFillExactV10(){
+  const target=mcClamp(+q('mcAuto').value||40,40,100);q('mcAuto').value=target;mcFillSerial++;
+  const rows=[...body.rows];if(!rows.length)return;
+  const limits=rows.map(r=>{const me=Math.max(0,+r.querySelector('.mxE').value||0),mi=Math.max(0,+r.querySelector('.mxI').value||0);const minE=Math.ceil(me*.40),minI=Math.ceil(mi*.40);return{me,mi,minE,minI,minT:minE+minI,maxT:me+mi}});
+  const grandMax=limits.reduce((s,x)=>s+x.maxT,0),grandMin=limits.reduce((s,x)=>s+x.minT,0);
+  const wanted=mcClamp(Math.round(grandMax*target/100),grandMin,grandMax);
+  const prev=rows.map(r=>(+r.querySelector('.obE').value||0)+(+r.querySelector('.obI').value||0));
+  const candidates=limits.map((lim,i)=>{const ideal=lim.maxT*target/100,vals=[];for(let v=lim.minT;v<=lim.maxT;v++)vals.push(v);vals.sort((a,b)=>{const sa=Math.abs(a-ideal)+(a===prev[i]?2:0)+(((a+mcFillSerial+i)%7)/100),sb=Math.abs(b-ideal)+(b===prev[i]?2:0)+(((b+mcFillSerial+i)%7)/100);return sa-sb});return vals});
+  const result=new Array(rows.length),used=new Set();let nodes=0;
+  function dfs(pos,sum){if(++nodes>300000)return false;if(pos===rows.length)return sum===wanted;let minRest=0,maxRest=0;for(let j=pos;j<rows.length;j++){let lo=null,hi=null;for(const v of candidates[j])if(!used.has(v)){if(lo===null||v<lo)lo=v;if(hi===null||v>hi)hi=v}if(lo===null)return false;minRest+=lo;maxRest+=hi}if(sum+minRest>wanted||sum+maxRest<wanted)return false;for(const v of candidates[pos]){if(used.has(v)||sum+v>wanted)continue;used.add(v);result[pos]=v;if(dfs(pos+1,sum+v))return true;used.delete(v)}return false}
+  let ok=dfs(0,0);
+  if(!ok){let current=0;for(let i=0;i<rows.length;i++){result[i]=mcClamp(Math.round(limits[i].maxT*target/100),limits[i].minT,limits[i].maxT);current+=result[i]}let guard=0;while(current!==wanted&&guard++<10000){const dir=current<wanted?1:-1;let changed=false;for(let i=0;i<result.length;i++){const n=result[i]+dir;if(n<limits[i].minT||n>limits[i].maxT)continue;result[i]=n;current+=dir;changed=true;if(current===wanted)break}if(!changed)break}}
+  const usedPairs=new Set();
+  rows.forEach((r,i)=>{const lim=limits[i],t=result[i],low=Math.max(lim.minE,t-lim.mi),high=Math.min(lim.me,t-lim.minI);const options=[];for(let e=low;e<=high;e++)options.push(e);options.sort(()=>Math.random()-.5);let chosen=options[0]??low;for(const e of options){const k=e+'|'+(t-e);if(!usedPairs.has(k)){chosen=e;break}}const intl=t-chosen;usedPairs.add(chosen+'|'+intl);r.querySelector('.obE').value=chosen;r.querySelector('.obI').value=intl});
+  update();
+}`;
+  html=html.replace("q('mcAuto').onchange=()=>{};",exactLogic+"\nq('mcAuto').onchange=()=>{};");
+  html=html.replace("if(q('mcFillMarks'))q('mcFillMarks').onclick=mcFillRandom;","if(q('mcFillMarks'))q('mcFillMarks').onclick=mcFillExactV10;");
+  html=html.replace("q('mcAuto').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();mcFillRandom()}};","q('mcAuto').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();mcFillExactV10()}};");
 
   html=html.replace('</head>',alignmentFix+'</head>');
-  html=html.replace('</body>','<script src="/marks-calculator-random.js?v=20260928-v9"><\\/script></body>');
   document.open();
   document.write(html);
   document.close();
