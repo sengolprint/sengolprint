@@ -1,0 +1,36 @@
+name: Fix Marks Calculator all boxes
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-marks-calculator-all-boxes.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch calculator boxes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          # Make calculated Maximum Total, Obtained Total and Percentage look like the other input boxes.
+          css='''\n<style id="mc-all-boxes-fix">\n#marksCalculator #mcTable td.mxT,#marksCalculator #mcTable td.obT,#marksCalculator #mcTable td.pct{padding:5px 6px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;background:#fff!important;min-width:64px!important;height:38px!important;line-height:26px!important;background-clip:padding-box!important}\n#marksCalculator #mcTable tbody td{vertical-align:middle}\n#marksCalculator #mcTable tbody tr{height:52px}\n#marksCalculator #mcTable input{height:38px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;padding:5px 8px!important}\n</style>\n'''
+          if 'mc-all-boxes-fix' not in s:
+              s=s.replace('</head>',css+'</head>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit actual index change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No index change needed"
+            exit 0
+          fi
+          git commit -m "Show boxes under all Marks Calculator headings"
+          git push
