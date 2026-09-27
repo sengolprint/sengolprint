@@ -13,38 +13,40 @@
   if(!response.ok)throw new Error('App source load failed: '+response.status);
   let html=await response.text();
 
-  const alignmentFix=`<style id="mc-alignment-v3">
+  const alignmentFix=`<style id="mc-alignment-v4">
 #marksCalculator{display:block!important;width:100%!important;max-width:none!important;min-height:100vh!important;background:#f3f6fb!important;overflow-x:auto!important}
 #marksCalculator.hidden{display:none!important}
-#marksCalculator .dash-content{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;padding:24px 28px!important;margin:0!important}
-#marksCalculator .dash-content>div{display:block!important;width:min(1320px,100%)!important;max-width:1320px!important;min-width:0!important;margin:18px auto!important;padding:22px!important;box-sizing:border-box!important}
-#marksCalculator #mcSummary{width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important;margin-bottom:22px!important}
-#marksCalculator #mcSummary>div{min-height:86px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;padding:14px 16px!important;box-sizing:border-box!important}
-#marksCalculator #mcSummary small{display:block!important;line-height:1.25!important}
-#marksCalculator #mcSummary b{margin-top:4px!important;font-size:1.02rem!important;line-height:1.2!important}
+#marksCalculator .dash-content{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;padding:20px 28px!important;margin:0!important}
+#marksCalculator .dash-content>div{display:block!important;width:min(1320px,100%)!important;max-width:1320px!important;min-width:0!important;margin:14px auto!important;padding:18px 22px!important;box-sizing:border-box!important}
+#marksCalculator #mcSummary{width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;margin-bottom:16px!important}
+#marksCalculator #mcSummary>div{min-height:68px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;padding:10px 14px!important;box-sizing:border-box!important}
+#marksCalculator #mcSummary small{display:block!important;line-height:1.15!important}
+#marksCalculator #mcSummary b{margin-top:3px!important;font-size:1rem!important;line-height:1.15!important}
 #marksCalculator #mcTable{width:100%!important;min-width:1080px!important;table-layout:fixed!important;border-collapse:collapse!important}
-#marksCalculator #mcTable th,#marksCalculator #mcTable td{box-sizing:border-box!important;vertical-align:middle!important;text-align:center!important;white-space:nowrap!important;padding:10px 8px!important}
-#marksCalculator #mcTable thead th{height:42px!important;line-height:1.2!important;font-weight:800!important}
-#marksCalculator #mcTable thead tr:first-child th{padding-top:12px!important;padding-bottom:8px!important}
-#marksCalculator #mcTable thead tr:nth-child(2) th{padding-top:8px!important;padding-bottom:12px!important}
-#marksCalculator #mcTable tbody tr{height:66px!important;border-top:1px solid #eef2f7!important}
-#marksCalculator #mcTable tbody td{height:66px!important}
+#marksCalculator #mcTable th,#marksCalculator #mcTable td{box-sizing:border-box!important;vertical-align:middle!important;text-align:center!important;white-space:nowrap!important;padding:6px 7px!important}
+#marksCalculator #mcTable thead th{height:34px!important;line-height:1.1!important;font-weight:800!important}
+#marksCalculator #mcTable thead tr:first-child th{padding-top:8px!important;padding-bottom:5px!important}
+#marksCalculator #mcTable thead tr:nth-child(2) th{padding-top:5px!important;padding-bottom:8px!important}
+#marksCalculator #mcTable tbody tr{height:50px!important;border-top:1px solid #eef2f7!important}
+#marksCalculator #mcTable tbody td{height:50px!important}
 #marksCalculator #mcTable th:first-child,#marksCalculator #mcTable td:first-child{text-align:left!important;min-width:0!important}
-#marksCalculator #mcTable input{display:block!important;width:72px!important;height:42px!important;margin:0 auto!important;padding:8px 10px!important;border:1px solid #cbd5e1!important;border-radius:9px!important;text-align:center!important;background:#fff!important;box-sizing:border-box!important}
-#marksCalculator #mcTable td:first-child input{width:100%!important;height:42px!important;max-width:none!important;margin:0!important;text-align:left!important}
-#marksCalculator #mcTable td.mxT,#marksCalculator #mcTable td.obT,#marksCalculator #mcTable td.pct{border:0!important;border-radius:0!important;background:transparent!important;min-width:0!important;height:66px!important;line-height:1.2!important;padding:10px 8px!important;font-weight:500!important}
+#marksCalculator #mcTable input{display:block!important;width:68px!important;height:32px!important;margin:0 auto!important;padding:4px 8px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;text-align:center!important;background:#fff!important;box-sizing:border-box!important}
+#marksCalculator #mcTable td:first-child input{width:100%!important;height:32px!important;max-width:none!important;margin:0!important;text-align:left!important}
+#marksCalculator #mcTable td.mxT,#marksCalculator #mcTable td.obT,#marksCalculator #mcTable td.pct{border:0!important;border-radius:0!important;background:transparent!important;min-width:0!important;height:50px!important;line-height:1.15!important;padding:6px 7px!important;font-weight:500!important}
 #marksCalculator #mcTable td.pct{font-weight:650!important}
 #marksCalculator #mcTable col.mc-subject{width:270px!important}
 #marksCalculator #mcTable col.mc-credit{width:90px!important}
 #marksCalculator #mcTable col.mc-mark{width:110px!important}
 #marksCalculator #mcTable col.mc-total{width:90px!important}
 #marksCalculator #mcTable col.mc-percent{width:90px!important}
-#marksCalculator #mcAddRow{margin-top:2px!important}
-#marksCalculator label:has(#mcAuto){display:flex!important;align-items:center!important;gap:7px!important;margin:0!important}
-#marksCalculator #mcAuto{width:64px!important;height:40px!important;text-align:center!important;margin:0!important}
+#marksCalculator #mcAddRow{margin-top:2px!important;padding:7px 10px!important}
+#marksCalculator .mc-auto-tools{display:flex!important;align-items:center!important;gap:7px!important;margin:0!important;font-size:.75rem!important;color:#64748b!important}
+#marksCalculator #mcAuto{width:62px!important;height:32px!important;text-align:center!important;margin:0!important;padding:4px 6px!important;border:1px solid #dbe2ea!important;border-radius:8px!important;box-sizing:border-box!important}
+#marksCalculator #mcFillMarks{height:32px!important;padding:4px 12px!important;border:0!important;border-radius:8px!important;background:#176b50!important;color:#fff!important;font-weight:800!important;cursor:pointer!important}
+#marksCalculator #mcFillMarks:hover{filter:brightness(.96)}
 @media(max-width:900px){
-  #marksCalculator .dash-content{padding:16px!important}
-  #marksCalculator .dash-content>div{width:100%!important;padding:16px!important}
+  #marksCalculator .dash-content{padding:14px!important}
+  #marksCalculator .dash-content>div{width:100%!important;padding:14px!important}
   #marksCalculator #mcSummary{grid-template-columns:1fr!important}
 }
 </style>`;
@@ -52,7 +54,15 @@
   const tableStart='<table id="mcTable" style="width:100%;border-collapse:collapse;min-width:820px;font-size:.78rem"><thead>';
   const tableWithColumns='<table id="mcTable" style="width:100%;border-collapse:collapse;min-width:820px;font-size:.78rem"><colgroup><col class="mc-subject"><col class="mc-credit"><col class="mc-mark"><col class="mc-mark"><col class="mc-total"><col class="mc-mark"><col class="mc-mark"><col class="mc-total"><col class="mc-percent"></colgroup><thead>';
   html=html.replace(tableStart,tableWithColumns);
+
+  const oldAuto='<label style="font-size:.75rem;color:#64748b">Auto-fill at <input id="mcAuto" type="number" min="0" max="100" value="65" style="width:58px;padding:7px;border:1px solid #dbe2ea;border-radius:8px"> %</label>';
+  const newAuto='<div class="mc-auto-tools">Auto-fill at <input id="mcAuto" type="number" min="0" max="100" value="65"> % <button id="mcFillMarks" type="button">Fill Marks</button></div>';
+  html=html.replace(oldAuto,newAuto);
+
+  const fillScript=`<script id="mc-fill-button-script">\n(()=>{\n  function fillMarksByPercentage(){\n    const auto=document.getElementById('mcAuto'),tbody=document.querySelector('#mcTable tbody');\n    if(!auto||!tbody)return;\n    const percent=Math.max(0,Math.min(100,Number(auto.value)||0))/100;\n    const rows=[...tbody.rows];\n    rows.forEach(row=>{\n      const mxE=row.querySelector('.mxE'),mxI=row.querySelector('.mxI'),obE=row.querySelector('.obE'),obI=row.querySelector('.obI');\n      if(!mxE||!mxI||!obE||!obI)return;\n      obE.value=Math.round((Number(mxE.value)||0)*percent);\n      obI.value=Math.round((Number(mxI.value)||0)*percent);\n    });\n    const trigger=tbody.querySelector('.obE,.obI');\n    if(trigger)trigger.dispatchEvent(new Event('input',{bubbles:true}));\n  }\n  const button=document.getElementById('mcFillMarks'),auto=document.getElementById('mcAuto');\n  if(button)button.addEventListener('click',fillMarksByPercentage);\n  if(auto)auto.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fillMarksByPercentage();}});\n})();\n<\\/script>`;
+
   html=html.replace('</head>',alignmentFix+'</head>');
+  html=html.replace('</body>',fillScript+'</body>');
   document.open();
   document.write(html);
   document.close();
