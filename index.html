@@ -52,7 +52,7 @@
       const usedPairs=new Set();rows.forEach((r,i)=>{const l=ls[i],t=result[i],low=Math.max(l.minE,t-l.mi),high=Math.min(l.me,t-l.minI),opts=[];for(let e=low;e<=high;e++)opts.push(e);opts.sort(()=>Math.random()-.5);let ext=opts[0]??low;for(const e of opts){const k=e+'|'+(t-e);if(!usedPairs.has(k)){ext=e;break}}const intl=t-ext;usedPairs.add(ext+'|'+intl);r.querySelector('.obE').value=ext;r.querySelector('.obI').value=intl});refresh()}
     btn.onclick=e=>{e.preventDefault();e.stopPropagation();fill()};auto.onchange=null;auto.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();fill()}};
   })();<\/script>`;
-  const helpers='<script src="/student-gradepoint-auto.js?v=20260928-v2"></'+'script><script src="/student-semester-summary.js?v=20260928-v5"></'+'script>';
+  const helpers='<script src="/student-gradepoint-auto.js?v=20260928-v2"></'+'script><script src="/student-semester-summary.js?v=20260928-v6"></'+'script>';
   html=html.replace('</body>',override+helpers+'</body>');
   document.open();document.write(html);document.close();
 })().catch(error=>{console.error(error);document.body.innerHTML='<div class="boot-error"><h2>Page load issue</h2><p>Please refresh the page.</p></div>'});
