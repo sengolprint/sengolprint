@@ -1,0 +1,88 @@
+name: Fix Marks Calculator Alignment
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-marks-alignment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-alignment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Align marks calculator table
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          css = r'''<style id="mc-all-boxes-fix">
+/* Marks Calculator: stable column widths and pixel-perfect row/header alignment */
+#marksCalculator .dash-content{padding:24px 32px!important}
+#marksCalculator .dash-content>div{width:min(1280px,calc(100% - 16px))!important;max-width:1280px!important;min-width:0!important;margin:18px auto!important}
+#marksCalculator #mcSummary{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important}
+#marksCalculator #mcTable{width:100%!important;min-width:1050px!important;table-layout:fixed!important;border-collapse:collapse!important}
+#marksCalculator #mcTable th,#marksCalculator #mcTable td{box-sizing:border-box!important;vertical-align:middle!important;text-align:center!important;padding:10px 8px!important;white-space:nowrap!important}
+#marksCalculator #mcTable thead th{height:44px!important;line-height:1.2!important;font-weight:800!important}
+#marksCalculator #mcTable thead tr:first-child th{padding-top:12px!important;padding-bottom:8px!important}
+#marksCalculator #mcTable thead tr:nth-child(2) th{padding-top:8px!important;padding-bottom:12px!important}
+#marksCalculator #mcTable tbody tr{height:68px!important;border-top:1px solid #eef2f7!important}
+#marksCalculator #mcTable tbody td{height:68px!important}
+#marksCalculator #mcTable th:first-child,#marksCalculator #mcTable td:first-child{text-align:left!important}
+#marksCalculator #mcTable input{display:block!important;width:72px!important;height:44px!important;margin:0 auto!important;padding:8px 10px!important;border:1px solid #cbd5e1!important;border-radius:9px!important;text-align:center!important;background:#fff!important}
+#marksCalculator #mcTable td:first-child input{width:100%!important;max-width:none!important;margin:0!important;text-align:left!important}
+#marksCalculator #mcTable td.mxT,#marksCalculator #mcTable td.obT,#marksCalculator #mcTable td.pct{border:0!important;border-radius:0!important;background:transparent!important;min-width:0!important;height:68px!important;line-height:1.2!important;padding:10px 8px!important;font-weight:500!important}
+#marksCalculator #mcTable td.pct{font-weight:650!important}
+#marksCalculator #mcTable col.mc-subject{width:270px}
+#marksCalculator #mcTable col.mc-credit{width:90px}
+#marksCalculator #mcTable col.mc-mark{width:110px}
+#marksCalculator #mcTable col.mc-total{width:90px}
+#marksCalculator #mcTable col.mc-percent{width:90px}
+#marksCalculator #mcTable+*{clear:both}
+@media (max-width:900px){
+  #marksCalculator .dash-content{padding:16px!important}
+  #marksCalculator .dash-content>div{width:100%!important}
+  #marksCalculator #mcSummary{grid-template-columns:1fr!important}
+}
+</style>'''
+
+          pattern = re.compile(r'<style id="mc-all-boxes-fix">.*?</style>', re.S)
+          if not pattern.search(text):
+              raise SystemExit('mc-all-boxes-fix style block not found')
+          text = pattern.sub(css, text, count=1)
+
+          table_start = '<table id="mcTable" style="width:100%;border-collapse:collapse;min-width:820px;font-size:.78rem"><thead>'
+          colgroup = ('<table id="mcTable" style="width:100%;border-collapse:collapse;min-width:820px;font-size:.78rem">'
+                      '<colgroup>'
+                      '<col class="mc-subject"><col class="mc-credit">'
+                      '<col class="mc-mark"><col class="mc-mark"><col class="mc-total">'
+                      '<col class="mc-mark"><col class="mc-mark"><col class="mc-total">'
+                      '<col class="mc-percent">'
+                      '</colgroup><thead>')
+          if table_start not in text:
+              raise SystemExit('mcTable start markup not found')
+          text = text.replace(table_start, colgroup, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit fix and remove one-time workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/fix-marks-alignment.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-marks-alignment.yml
+          git commit -m "Fix marks calculator table alignment"
+          git push
